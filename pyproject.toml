@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "textual-labelset"
+version = "0.1.0"
+description = "Maintain tag sets easily and visually"
+authors = ["Steve Holden <steve@holdenweb.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ['^3.8']
+textual = "^0.36.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -27,9 +27,34 @@ The default representation shows each labelset
 as a variable-height area of selected values
 next to a similar area of deselected values.
 The following code gives a simple example.
+If you have both textual and textual_labelset installed
+you can run it with the command
+
+    textual run textual_labelset.demo
+
+Here's the code
 
 ```python
+"""
+demo.py: show off the features of textual_labelset.
+"""
+from textual.app import App
+from textual_labelset import LabelSetSelector
 
+selected = "Yes Oui Ja".split()
+deselected = "No Non Nein".split()
+
+lss = LabelSetSelector(selected, deselected)
+
+class LabelSetApp(App):
+
+    def compose(self):
+        yield lss
+
+app = LabelSetApp()
+
+if __name__ == '__main__':
+    app.run()
 ```
 ### Development
 
