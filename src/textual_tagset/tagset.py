@@ -12,16 +12,16 @@ def sort_key(x):
     return l, f
 
 
-class LabelSet(Static):
+class TagSet(Static):
     """A set of labels that render as a static.
 
     Args:
         members: An iterable of string values.
         action_func: The action to be taken when a member's link is clicked.
-        fmt: The format of a member in the LabelSet's string representation.
+        fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
-    DEFAULT_CSS = "LabelSet { width: 30; height: auto; margin: 2; border: yellow 100%; }"
+    DEFAULT_CSS = "TagSet { width: 30; height: auto; margin: 2; border: yellow 100%; }"
 
     def __init__(self,
                  members: list[str],
@@ -46,14 +46,14 @@ class LabelSet(Static):
         return self.action_func(i)
 
 
-class LabelSetSelector(Widget):
+class TagSetSelector(Widget):
     """Select a set of labels from a closed vocabulary.
 
     Args:
         selected: An iterable of the currently selected labels.
         unselected: An iterable of the currently deselected labels.
     """
-    DEFAULT_CSS = "LabelSetDelector { border: yellow 100%; }"
+    DEFAULT_CSS = "TagSetDelector { border: yellow 100%; }"
 
     def __init__(self, selected: list[str], unselected: list[str], *args, **kw) -> None:
         super().__init__(*args, **kw)
@@ -71,16 +71,16 @@ class LabelSetSelector(Widget):
         v.mount(self.selected_labels())
         v.mount(self.unselected_labels())
 
-    def unselected_labels(self) -> LabelSet:
-        return LabelSet(
+    def unselected_labels(self) -> TagSet:
+        return TagSet(
             members=self.unselected,
             action_func=self.select,
             fmt="\\[[@click='click({i})']{v}[/]]",
             classes="label-set selected-labels",
         )
 
-    def selected_labels(self) -> LabelSet:
-        return LabelSet(
+    def selected_labels(self) -> TagSet:
+        return TagSet(
             members=self.selected,
             action_func=self.deselect,
             fmt="\\[{v} [bold black on white][@click='click({i})']x[/][/bold black on white]]",
@@ -99,9 +99,9 @@ class LabelSetSelector(Widget):
         del self.unselected[i]
         self.update_view()
 
-class WideLabelSetSelector(LabelSetSelector):
+class WideTagSetSelector(TagSetSelector):
     """
-    LabelSetSelector with a custom layout.
+    TagSetSelector with a custom layout.
     """
     def compose(self) -> ComposeResult:
         with VerticalScroll(id="lss-selector"):
@@ -117,9 +117,9 @@ def build_app(s: list[str], u: list[str]) -> App:
     class SelTestApp(App):
         def compose(self):
             with VerticalScroll():
-                yield LabelSetSelector(s, u)
+                yield TagSetSelector(s, u)
                 yield Rule()
-                yield WideLabelSetSelector(s, u)
+                yield WideTagSetSelector(s, u)
 
     return SelTestApp()
 
