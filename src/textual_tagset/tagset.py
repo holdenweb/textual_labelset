@@ -12,7 +12,7 @@ def sort_key(x):
     return l, f
 
 
-class TagSetStatic(Static):
+class TagSet(Widget):
     """A set of labels that render as a static.
 
     Args:
@@ -21,29 +21,41 @@ class TagSetStatic(Static):
         fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
-    DEFAULT_CSS = "TagSet { width: 30; height: auto; margin: 0 2 0 2; border: yellow 100%; }"
+    DEFAULT_CSS = "TagSet { width: 30; margin: 2; border: yellow 100%; }"
 
-    def __init__(self,
-                 members: dict[int, str],
-                 action_func: Callable[[int], None],
-                 fmt: str, key=None,
-                 *args,
-                 **kw
+
+    def __init__(
+        self,
+        members: dict[int, str],
+        action_func: Callable[[int], None],
+        fmt: str,
+        key: Callable[..., object] | None = None,
+        *args,
+        **kw,
     ):
-        super().__init__(*args, **kw)
-        self.action_func = action_func
-        def local_key(x):
+        def local_key(x: tuple[int, str]) -> list[str]:
             seq = reversed(x[1].split())
             return list(seq)
-        self.fmt = fmt
+
+        super().__init__(*args, **kw)
+        self.action_func = action_func
         self.key = local_key if key is None else key
+        self.fmt = fmt
         self.members = dict(sorted(members.items(), key=self.key))
 
-    def render(self):
-        strings = [self.fmt.format(i=i, v=v) for (i, v) in self.members.items()]
+    def compose(self):
+        with Vertical():
+            yield Static("")
+
+    def on_mount(self):
+        self.query_one(Static).update(self.text(self.fmt))
+
+    def text(self, fmt):
+        strings = [fmt.format(i=i, v=v) for (i, v) in self.members.items()]
         return Text.from_markup(" ".join(strings))
 
-    def action_click(self, i: int):
+    def action_klick(self, i: int):
+        print("TagSet action_click")
         return self.action_func(i)
 
 
@@ -81,8 +93,8 @@ class TagSetSelector(Widget):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
-            yield self.selected_labels()
-            yield self.unselected_labels()
+            yield TagSet(self.selected, self.deselect, fmt="\\[{v} [@click='klick({i})']x[/]]")
+            yield TagSet(self.unselected, self.select, fmt="\\[[@click='klick({i})']{v}[/]]")
 
     def update_view(self) -> None:
         v = self.query_one("#lss-selector")
@@ -90,7 +102,7 @@ class TagSetSelector(Widget):
         v.mount(self.selected_labels())
         v.mount(self.unselected_labels())
 
-    def unselected_labels(self) -> TagSetStatic:
+    def unselected_labels(self) -> TagSet:
         return TagSet(
             members=self.unselected,
             action_func=self.select,
@@ -98,25 +110,30 @@ class TagSetSelector(Widget):
             classes="label-set selected-labels",
         )
 
-    def selected_labels(self) -> TagSetStatic:
+    def selected_labels(self) -> TagSet:
         return TagSet(
             members=self.selected,
             action_func=self.deselect,
-            fmt="\\[{v} [bold black on white][@click='click({i})']x[/][/bold black on white]]",
-            classes="label-set unselected-labels",
+            fmt="\\[{v} [@click='klick({i})']x[/]]"
         )
 
     def deselect(self, i: int) -> None:
+        print("DESELECTING", i)
         assert i in self.selected
         self.unselected[i] = self.selected[i]
         del self.selected[i]
         self.update_view()
 
     def select(self, i: int) -> None:
+        print("SELECTING", i)
         assert i in self.unselected
         self.selected[i] = self.unselected[i]
         del self.unselected[i]
         self.update_view()
+
+    def action_klick(self, i: int):
+        print("TagSetSelector action_click")
+
 
 class WideTagSetSelector(TagSetSelector):
     """
@@ -124,9 +141,11 @@ class WideTagSetSelector(TagSetSelector):
     """
     def compose(self) -> ComposeResult:
         with VerticalScroll(id="lss-selector"):
-            yield self.selected_labels()
-            yield self.unselected_labels()
+            yield TagSet(self.selected, self.deselect, fmt="\\[{v} [@click='klick({i})']x[/]]")
+            yield TagSet(self.unselected, self.select, fmt="\\[[@click='klick({i})']{v}[/]]")
 
+    def action_klick(self, i: int):
+        print("WideTagSetSelector action_click")
 
 s = "Tom Dick Harry".split()
 u = "Charlie Joe Quentin".split()
@@ -134,9 +153,13 @@ u = "Charlie Joe Quentin".split()
 def build_app(s: list[str], u: list[str]) -> App:
 
     class SelTestApp(App):
+
         def compose(self):
             with VerticalScroll():
                 yield TagSetSelector(s, u)
+
+        def action_klick(self, i: int):
+            print("SelTestApp action_click")
 
     return SelTestApp()
 
