@@ -12,7 +12,7 @@ def sort_key(x):
     return l, f
 
 
-class TagSet(Static):
+class TagSetStatic(Static):
     """A set of labels that render as a static.
 
     Args:
@@ -21,14 +21,15 @@ class TagSet(Static):
         fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
-    DEFAULT_CSS = "TagSet { width: 30; height: auto; margin: 2; border: yellow 100%; }"
+    DEFAULT_CSS = "TagSet { width: 30; height: auto; margin: 0 2 0 2; border: yellow 100%; }"
 
     def __init__(self,
-                 members: list[str],
+                 members: dict[int, str],
                  action_func: Callable[[int], None],
                  fmt: str, key=None,
                  *args,
-                 **kw):
+                 **kw
+    ):
         super().__init__(*args, **kw)
         self.action_func = action_func
         def local_key(x):
@@ -46,6 +47,24 @@ class TagSet(Static):
         return self.action_func(i)
 
 
+class TagSet(Widget):
+
+    DEFAULT_CSS = 'Horizontal {height: auto;}'
+
+    def __init__(self,
+                 members: dict[int, str],
+                 action_func: Callable[[int], None],
+                 fmt: str, key=None,
+                 *args,
+                 **kw
+    ):
+        super().__init__(*args, **kw)
+        self.static = TagSetStatic(members=members, action_func=action_func, fmt=fmt)
+
+    def compose(self):
+        with Horizontal():
+            yield self.static
+
 class TagSetSelector(Widget):
     """Select a set of labels from a closed vocabulary.
 
@@ -53,12 +72,12 @@ class TagSetSelector(Widget):
         selected: An iterable of the currently selected labels.
         unselected: An iterable of the currently deselected labels.
     """
-    DEFAULT_CSS = "TagSetDelector { border: yellow 100%; }"
+    DEFAULT_CSS = "TagSetSelector { border: yellow 100%; }"
 
     def __init__(self, selected: list[str], unselected: list[str], *args, **kw) -> None:
         super().__init__(*args, **kw)
-        self.selected = dict(enumerate(selected))
-        self.unselected = dict(enumerate(unselected, start=len(selected)))
+        self.selected: dict[int, str] = dict(enumerate(selected))
+        self.unselected: dict[int, str] = dict(enumerate(unselected, start=len(selected)))
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
@@ -71,7 +90,7 @@ class TagSetSelector(Widget):
         v.mount(self.selected_labels())
         v.mount(self.unselected_labels())
 
-    def unselected_labels(self) -> TagSet:
+    def unselected_labels(self) -> TagSetStatic:
         return TagSet(
             members=self.unselected,
             action_func=self.select,
@@ -79,7 +98,7 @@ class TagSetSelector(Widget):
             classes="label-set selected-labels",
         )
 
-    def selected_labels(self) -> TagSet:
+    def selected_labels(self) -> TagSetStatic:
         return TagSet(
             members=self.selected,
             action_func=self.deselect,
@@ -118,8 +137,6 @@ def build_app(s: list[str], u: list[str]) -> App:
         def compose(self):
             with VerticalScroll():
                 yield TagSetSelector(s, u)
-                yield Rule()
-                yield WideTagSetSelector(s, u)
 
     return SelTestApp()
 
