@@ -34,9 +34,6 @@ def build_app(s: list[str], u: list[str]) -> App:
             yield TagSetSelector(s, u)
             yield Horizontal(id="filler")
 
-        def on_click(self, e):
-            self.panic(self.css_tree)
-
     return SelTestApp()
 
 app = build_app(selected, deselected)
