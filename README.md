@@ -89,6 +89,4 @@ Development work will aim to increase usability:
    it uses a slightly bizarre algorithm to sort names correctly).
 2. Make it easy to configure the formats used for the selected
    and deselected items.
-3. Make it easier to configure the layout of the component
-   (or better explain how to).
 
