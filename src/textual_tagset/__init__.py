@@ -1,4 +1,4 @@
-from .tagset import app, TagSet, TagSetStatic, TagSetSelector, WideTagSetSelector
+from .tagset import TagSet, TagSetStatic, TagSetSelector, WideTagSetSelector
 
 
 
