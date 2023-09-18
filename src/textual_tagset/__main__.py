@@ -33,10 +33,13 @@ def build_app(s: list[str], u: list[str]) -> App:
         def compose(self):
             yield TagSetSelector(s, u)
             yield Horizontal(id="filler")
+        def on_click(self, event):
+            self.log(self.tree)
 
-    return SelTestApp()
+    return SelTestApp
 
-app = build_app(selected, deselected)
+SelTestApp = build_app(selected, deselected)
+app = SelTestApp()
 
 if __name__ == '__main__':
-    app.run()
+    SelTestApp().run()

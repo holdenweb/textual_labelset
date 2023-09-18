@@ -10,21 +10,7 @@ DEFAULT_SELECTED_FORMAT = "\\[{v} [@click='klick({i})']x[/]]"
 DEFAULT_UNSELECTED_FORMAT = "\\[[@click='klick({i})']{v}[/]]"
 
 
-def sort_key(x):
-    k, v = x
-    f, l = v.split(None, 1)
-    return l, f
-
-class ActionStatic(Static):
-    def __init__(self, *args, action_func, **kw):
-        super().__init__(*args, **kw)
-        self.action_func = action_func
-
-    def action_klick(self, i: int):
-        return self.action_func(i)
-
-
-class TagSetStatic(Widget):
+class TagSetStatic(Static):
     """A set of labels that render as a static.
 
     Args:
@@ -52,16 +38,14 @@ class TagSetStatic(Widget):
         self.fmt = fmt
         self.members = dict(sorted(members.items(), key=self.key))
 
-    def compose(self):
-        with Vertical(id="tag-set-static"):
-            yield ActionStatic("", action_func=self.action_func)
+    def update(self, members):
+        print("")
+        strings = [self.fmt.format(i=i, v=v) for (i, v) in self.members.items()]
+        super().update(" ".join(strings))
 
-    def on_mount(self):
-        self.query_one(ActionStatic).update(self.text(self.fmt))
-
-    def text(self, fmt):
-        strings = [fmt.format(i=i, v=v) for (i, v) in self.members.items()]
-        return Text.from_markup(" ".join(strings))
+    def action_klick(self, i: int):
+        print("CLICKED ON", i)
+        return self.action_func(i)
 
 
 class TagSet(Widget):
@@ -77,6 +61,7 @@ class TagSet(Widget):
                  **kw
     ):
         super().__init__(*args, **kw)
+        print("TAG SET INITIALISE")
         self.container = Vertical(id="tag-set")
         self.static = TagSetStatic(members=members, action_func=action_func, fmt=fmt)
 
@@ -84,9 +69,6 @@ class TagSet(Widget):
         with self.container:
             yield self.static
 
-    def update(self):
-        self.container.remove_children()
-        self.container.mount(self.static)
 
 class TagSetSelector(Widget):
     """
@@ -142,7 +124,7 @@ class TagSetSelector(Widget):
         self.update_view()
 
 
-class WideTagSetSelector(TagSetSelector):
+class FilteredTagSetSelector(TagSetSelector):
     """
     TagSetSelector with a custom layout.
     """
