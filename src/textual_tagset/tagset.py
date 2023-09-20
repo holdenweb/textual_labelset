@@ -80,6 +80,16 @@ class TagSet(Widget):
         with self.container:
             yield self.static
 
+class FilteredTagSetStatic(TagSetStatic):
+    def compose(self):
+        with self.container:
+            yield Input(id="fts-input")
+            yield self.static
+
+    def on_input_changed(self, event):
+        value = self.event.input.value.lower()
+        self.static.remove()
+        self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()})
 
 class TagSetSelector(Widget):
     """
@@ -142,7 +152,7 @@ class FilteredTagSetSelector(TagSetSelector):
     def compose(self) -> ComposeResult:
         with Vertical(id="lss-selector"):
             yield TagSet(self.selected, self.deselect, fmt=DEFAULT_SELECTED_FORMAT)
-            yield TagSet(self.unselected, self.select, fmt=DEFAULT_UNSELECTED_FORMAT)
+            yield FilteredTagSet(self.unselected, self.select, fmt=DEFAULT_UNSELECTED_FORMAT)
 
 s = "Tom Dick Harry".split()
 u = "Charlie Joe Quentin".split()

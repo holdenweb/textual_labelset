@@ -7,13 +7,13 @@ from textual.app import App
 
 pytest_plugins = ('pytest_asyncio',)
 
-from textual_tagset import TagSet, TagSetStatic
+from textual_tagset import TagSet, TagSetStatic, FilteredTagSetStatic
 
 def ignore(i):
     pass
 
 
-def build_app(members=[], fmt="{v}"):
+def build_app(ts_type, members=[], fmt="{v}"):
 
     class TestApp(App):
 
@@ -22,7 +22,8 @@ def build_app(members=[], fmt="{v}"):
             self.members = dict(enumerate(members))
             self.action_func = ignore
             self.fmt = fmt
-            self.component = TagSetStatic(self.members, ignore, fmt)
+            # assert ts_type == list
+            self.component = ts_type(self.members, ignore, fmt)
 
         def compose(self):
             yield self.component
@@ -33,8 +34,9 @@ def build_app(members=[], fmt="{v}"):
     return TestApp
 
 @pytest.mark.asyncio
-async def test_tagset_static_empty():
-    app = build_app([], fmt="{v}")
+@pytest.mark.parametrize("ts_class", [TagSetStatic, FilteredTagSetStatic])
+async def test_tagset_static_empty(ts_class):
+    app = build_app(ts_type=ts_class, fmt="{v}")
     test_app = app()
     async with test_app.run_test() as pilot:
         ch = test_app.query_one(TagSetStatic)
@@ -43,8 +45,9 @@ async def test_tagset_static_empty():
 
 
 @pytest.mark.asyncio
-async def test_tagset_static_nonempty():
-    app = build_app(["a", "b"], fmt="{v}")
+@pytest.mark.parametrize("ts_class", [TagSetStatic, FilteredTagSetStatic])
+async def test_tagset_static_nonempty(ts_class):
+    app = build_app(ts_class, ["a", "b"], fmt="{v}")
     test_app = app()
     async with test_app.run_test() as pilot:
         ch = test_app.query_one(TagSetStatic)
@@ -52,8 +55,9 @@ async def test_tagset_static_nonempty():
 
 
 @pytest.mark.asyncio
-async def test_tagset_static_formatting():
-    app = build_app(["a", "b"], fmt="\\[{v} [@click='klick({i})']x[/]]")
+@pytest.mark.parametrize("ts_class", [TagSetStatic, FilteredTagSetStatic])
+async def test_tagset_static_formatting(ts_class):
+    app = build_app(ts_class, ["a", "b"], fmt="\\[{v} [@click='klick({i})']x[/]]")
     test_app = app()
     async with test_app.run_test() as pilot:
         ch = test_app.query_one(TagSetStatic)
@@ -62,7 +66,7 @@ async def test_tagset_static_formatting():
 
 @pytest.mark.asyncio
 async def test_tagset_static_push_pop():
-    app = build_app([], fmt="[{i} {v}]")
+    app = build_app(TagSetStatic, [], fmt="[{i} {v}]")
     test_app = app()
     async with test_app.run_test() as pilot:
         static = test_app.component
