@@ -2,7 +2,7 @@
 demo.py: show off the features of textual_tagset.
 """
 from textual.app import App
-from textual_tagset import TagSetSelector
+from textual_tagset import TagSetSelector, TagSet, TagSetStatic, FilteredTagSetSelector
 from textual.containers import Horizontal, Vertical
 
 selected = (
@@ -39,7 +39,8 @@ def build_app(s: list[str], u: list[str]) -> App:
     return SelTestApp
 
 SelTestApp = build_app(selected, deselected)
-app = SelTestApp()
+app = SelTestApp
 
 if __name__ == '__main__':
-    SelTestApp().run()
+    print('running')
+    app.run()

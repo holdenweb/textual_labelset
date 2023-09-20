@@ -47,6 +47,9 @@ class TagSetStatic(Static):
         print("CLICKED ON", i)
         return self.action_func(i)
 
+    def render(self):
+        return Text.from_markup(" ".join(self.fmt.format(i=i, v=v) for (i, v) in self.members.items()))
+
 
 class TagSet(Widget):
     """
@@ -136,3 +139,30 @@ class FilteredTagSetSelector(TagSetSelector):
 s = "Tom Dick Harry".split()
 u = "Charlie Joe Quentin".split()
 
+fmt = "{v}"
+
+
+def ignore(i):
+    pass
+
+
+class TestApp(App):
+
+    CSS_PATH = "tagset.tcss"
+
+    def __init__(self):
+        super().__init__()
+        members = dict(enumerate(s))
+        self.component = TagSetStatic(members, ignore, fmt)
+
+    def compose(self):
+        with Horizontal():
+            yield self.component
+
+    def on_click(self, event):
+        self.log(self.tree)
+
+app = TestApp()
+
+if __name__ == '__main__':
+    app.run()
