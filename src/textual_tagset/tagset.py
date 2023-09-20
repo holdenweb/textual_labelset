@@ -38,6 +38,14 @@ class TagSetStatic(Static):
         self.fmt = fmt
         self.members = dict(sorted(members.items(), key=self.key))
 
+    def push(self, key, value):
+        assert key not in self.members
+        self.members[key] = value
+
+    def pop(self, key):
+        assert key in self.members
+        return self.members.pop(key)
+
     def update(self, members):
         print("")
         strings = [self.fmt.format(i=i, v=v) for (i, v) in self.members.items()]
@@ -116,14 +124,14 @@ class TagSetSelector(Widget):
 
     def deselect(self, i: int) -> None:
         assert i in self.selected
-        self.unselected[i] = self.selected[i]
-        del self.selected[i]
+        value = self.selected.pop(i)
+        self.unselected.push(i, value)
         self.update_view()
 
     def select(self, i: int) -> None:
         assert i in self.unselected
-        self.selected[i] = self.unselected[i]
-        del self.unselected[i]
+        value = self.unselected.pop(i)
+        self.selected.push(i, value)
         self.update_view()
 
 

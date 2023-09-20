@@ -58,3 +58,17 @@ async def test_tagset_static_formatting():
     async with test_app.run_test() as pilot:
         ch = test_app.query_one(TagSetStatic)
         assert ch.render().plain == "[a x] [b x]"
+
+
+@pytest.mark.asyncio
+async def test_tagset_static_push_pop():
+    app = build_app([], fmt="[{i} {v}]")
+    test_app = app()
+    async with test_app.run_test() as pilot:
+        static = test_app.component
+        static.push(1, "a")
+        assert static.render().plain == "[1 a]"
+        static.push(2, "b")
+        assert static.render().plain == "[1 a] [2 b]"
+        static.pop(1)
+        assert static.render().plain == "[2 b]"
