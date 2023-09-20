@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.widget import Widget
-from textual.widgets import Static, Rule
+from textual.widgets import Static, Rule, Input
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from rich.text import Text
 
@@ -63,33 +63,39 @@ class TagSet(Widget):
     """
     Turns a dict of tags into a renderable widget.
     """
-
     def __init__(self,
                  members: dict[int, str],
                  action_func: Callable[[int], None],
-                 fmt: str, key=None,
+                 fmt: str,
+                 key=None,
                  *args,
                  **kw
     ):
         super().__init__(*args, **kw)
-        print("TAG SET INITIALISE")
         self.container = Vertical(id="tag-set")
+        self.members = members
+        self.action_func = action_func
+        self.fmt = fmt
         self.static = TagSetStatic(members=members, action_func=action_func, fmt=fmt)
 
     def compose(self):
         with self.container:
             yield self.static
 
-class FilteredTagSetStatic(TagSetStatic):
+class FilteredTagSet(TagSet):
     def compose(self):
         with self.container:
-            yield Input(id="fts-input")
+            yield Input(id="filter-string")
             yield self.static
 
     def on_input_changed(self, event):
-        value = self.event.input.value.lower()
+        value = event.input.value.lower()
         self.static.remove()
-        self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()})
+        self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()},
+                                   action_func=self.action_func,
+                                   fmt=self.fmt)
+        self.container.mount(self.static)
+        #self.container.query_one("#filter-string").focus()
 
 class TagSetSelector(Widget):
     """
@@ -171,7 +177,7 @@ class TestApp(App):
     def __init__(self):
         super().__init__()
         members = dict(enumerate(s))
-        self.component = TagSetStatic(members, ignore, fmt)
+        self.component = FilteredTagSet(members, ignore, fmt)
 
     def compose(self):
         with Horizontal():

@@ -1,4 +1,4 @@
-from .tagset import TagSet, TagSetStatic, FilteredTagSetStatic, TagSetSelector, FilteredTagSetSelector
+from .tagset import TagSet, FilteredTagSet, TagSetStatic, TagSetSelector, FilteredTagSetSelector
 
 
 
