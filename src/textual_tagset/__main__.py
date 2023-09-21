@@ -2,7 +2,7 @@
 demo.py: show off the features of textual_tagset.
 """
 from textual.app import App
-from textual_tagset import TagSetSelector, TagSet, TagSetStatic, FilteredTagSetSelector
+from textual_tagset import TagSetSelector, TagSet, TagSetStatic, FilteredTagSet, FilteredTagSetSelector
 from textual.containers import Horizontal, Vertical
 
 selected = (
@@ -31,15 +31,16 @@ def build_app(s: list[str], u: list[str]) -> App:
     class SelTestApp(App):
         CSS_PATH = "tagset.tcss"
         def compose(self):
-            yield TagSetSelector(s, u)
-            yield Horizontal(id="filler")
+            yield FilteredTagSet(dict(enumerate(s)), action_func=lambda i: None, fmt="{v}", key=None)
+            #yield FilteredTagSetSelector(s, u)
+            #yield Horizontal(id="filler")
         def on_click(self, event):
             self.log(self.tree)
 
     return SelTestApp
 
 SelTestApp = build_app(selected, deselected)
-app = SelTestApp
+app = SelTestApp()
 
 if __name__ == '__main__':
     print('running')

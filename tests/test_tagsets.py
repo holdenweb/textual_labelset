@@ -81,6 +81,9 @@ async def test_tagset_static_push_pop():
 
 @pytest.mark.asyncio
 async def test_tagset_static_render():
+    """
+    Verify correct operation of FilteredTagSet under input.
+    """
     app = build_app(FilteredTagSet, ["a", "bz", "cz"], fmt="{v}")
     test_app = app()
     async with test_app.run_test() as pilot:

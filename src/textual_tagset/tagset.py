@@ -89,13 +89,18 @@ class FilteredTagSet(TagSet):
             yield self.static
 
     def on_input_changed(self, event):
+        #
+        # Probable issue here:
+        # We replace the static when the input changes, but we
+        # also want to update it when an element is removed or added
+        # rather than creating a whole new TagSetStatic.
+        #
         value = event.input.value.lower()
         self.static.remove()
         self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()},
                                    action_func=self.action_func,
                                    fmt=self.fmt)
         self.container.mount(self.static)
-        #self.container.query_one("#filter-string").focus()
 
 class TagSetSelector(Widget):
     """
@@ -107,6 +112,8 @@ class TagSetSelector(Widget):
     """
     CSS_PATH = "tagset.tcss"
 
+    tagset_type = TagSet
+
     def __init__(self, selected_labels: list[str], unselected_labels: list[str], *args, **kw) -> None:
         super().__init__(*args, **kw)
         self.selected: dict[int, str] = dict(enumerate(selected_labels))
@@ -114,17 +121,24 @@ class TagSetSelector(Widget):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
-            yield TagSet(self.selected, self.deselect, fmt=DEFAULT_SELECTED_FORMAT)
-            yield TagSet(self.unselected, self.select, fmt=DEFAULT_UNSELECTED_FORMAT)
+            yield TagSet(self.selected, self.deselect, fmt=DEFAULT_SELECTED_FORMAT, id="selected-set")
+            yield self.tagset_type(self.unselected, self.select, fmt=DEFAULT_UNSELECTED_FORMAT, id="unselected-set")
 
     def update_view(self) -> None:
         v = self.query_one("#lss-selector")
+        #
+        # Multiple issues here.
+        # 1. Since only the unselected tags can change there's
+        #    no need to rebuild the whole container.
+        # 2. Creating a new unselected FilteredTagSet destroys
+        #    the continuity of the filtering input.
+        #
         v.remove_children()
         v.mount(self.selected_tags())
         v.mount(self.unselected_tags())
 
     def unselected_tags(self) -> TagSet:
-        return TagSet(
+        return self.tagset_type(
             members=self.unselected,
             action_func=self.select,
             fmt=DEFAULT_UNSELECTED_FORMAT,
@@ -141,13 +155,13 @@ class TagSetSelector(Widget):
     def deselect(self, i: int) -> None:
         assert i in self.selected
         value = self.selected.pop(i)
-        self.unselected.push(i, value)
+        self.unselected[i] = value
         self.update_view()
 
     def select(self, i: int) -> None:
         assert i in self.unselected
         value = self.unselected.pop(i)
-        self.selected.push(i, value)
+        self.selected[i] = value
         self.update_view()
 
 
@@ -155,6 +169,8 @@ class FilteredTagSetSelector(TagSetSelector):
     """
     TagSetSelector with a custom layout.
     """
+    tagset_type = FilteredTagSet
+
     def compose(self) -> ComposeResult:
         with Vertical(id="lss-selector"):
             yield TagSet(self.selected, self.deselect, fmt=DEFAULT_SELECTED_FORMAT)
