@@ -13,3 +13,4 @@ TagSetSelector { height: auto; }
 
 #lss-selector { height: auto; }
 
+Vertical, Horizontal {height: auto; }

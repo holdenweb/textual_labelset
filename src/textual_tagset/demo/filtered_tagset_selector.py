@@ -42,6 +42,5 @@ app = SelTestApp()
 
 if __name__ == '__main__':
     print('running')
-    import wingdbstub
 
     app.run()

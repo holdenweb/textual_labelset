@@ -4,7 +4,6 @@ demo.py: show off the features of textual_tagset.
 from textual.app import App
 from textual_tagset import TagSetSelector, TagSet, TagSet, FilteredTagSet, FilteredTagSetSelector
 from textual.containers import Horizontal, Vertical
-import wingdbstub
 
 selected = (
     "Liberty Baxter, Nevada Bray, Tasha Quinn, Teegan Mays, Omar Hendrix, "
