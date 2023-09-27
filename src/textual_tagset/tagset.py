@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.widget import Widget
-from textual.widgets import Static, Rule, Input
+from textual.widgets import Label, Rule, Input
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from rich.text import Text
 
@@ -10,7 +10,8 @@ DEFAULT_SELECTED_FORMAT = "\\[{v} [@click='klick({i})']x[/]]"
 DEFAULT_UNSELECTED_FORMAT = "\\[[@click='klick({i})']{v}[/]]"
 
 
-class TagSetStatic(Static):
+class TagSet(Widget):
+
     """A set of labels that render as a static.
 
     Args:
@@ -19,6 +20,8 @@ class TagSetStatic(Static):
         fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
+    filter_string = ""
+
     def __init__(
         self,
         members: dict[int, str],
@@ -37,6 +40,7 @@ class TagSetStatic(Static):
         self.key = local_key if key is None else key
         self.fmt = fmt
         self.members = dict(sorted(members.items(), key=self.key))
+        self.static = Label(Text(""), id="tagset-static")
 
     def push(self, key, value):
         assert key not in self.members
@@ -46,45 +50,31 @@ class TagSetStatic(Static):
         assert key in self.members
         return self.members.pop(key)
 
-    def update(self, members):
-        print("")
-        strings = [self.fmt.format(i=i, v=v) for (i, v) in self.members.items()]
-        super().update(" ".join(strings))
+    def compose(self):
+        with Vertical():
+            yield self.static
+
+    def on_mount(self):
+        self.update()
+
+    def update(self):
+        strings = [self.fmt.format(i=i, v=v) for (i, v) in self.members.items() if self.filter_string in v.lower()]
+        content = Text.from_markup(" ".join(strings))
+        self.static.update(content)
 
     def action_klick(self, i: int):
         print("CLICKED ON", i)
         return self.action_func(i)
 
     def render(self):
-        return Text.from_markup(" ".join(self.fmt.format(i=i, v=v) for (i, v) in self.members.items()))
+        return Text.from_markup(" ".join(self.fmt.format(i=i, v=v) for (i, v) in self.members.items() if self.filter_string in v))
 
 
-class TagSet(Widget):
-    """
-    Turns a dict of tags into a renderable widget.
-    """
-    def __init__(self,
-                 members: dict[int, str],
-                 action_func: Callable[[int], None],
-                 fmt: str,
-                 key=None,
-                 *args,
-                 **kw
-    ):
-        super().__init__(*args, **kw)
-        self.container = Vertical(id="tag-set")
-        self.members = members
-        self.action_func = action_func
-        self.fmt = fmt
-        self.static = TagSetStatic(members=members, action_func=action_func, fmt=fmt)
-
-    def compose(self):
-        with self.container:
-            yield self.static
 
 class FilteredTagSet(TagSet):
+
     def compose(self):
-        with self.container:
+        with Vertical():
             yield Input(id="filter-string")
             yield self.static
 
@@ -95,12 +85,13 @@ class FilteredTagSet(TagSet):
         # also want to update it when an element is removed or added
         # rather than creating a whole new TagSetStatic.
         #
-        value = event.input.value.lower()
-        self.static.remove()
-        self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()},
-                                   action_func=self.action_func,
-                                   fmt=self.fmt)
-        self.container.mount(self.static)
+        self.filter_string = event.input.value.lower()
+        super().update()
+        #self.static.remove()
+        #self.static = TagSetStatic(members={k: v for (k, v) in self.members.items() if value in v.lower()},
+                                   #action_func=self.action_func,
+                                   #fmt=self.fmt)
+        #self.container.mount(self.static)
 
 class TagSetSelector(Widget):
     """
@@ -133,9 +124,8 @@ class TagSetSelector(Widget):
         # 2. Creating a new unselected FilteredTagSet destroys
         #    the continuity of the filtering input.
         #
-        v.remove_children()
-        v.mount(self.selected_tags())
-        v.mount(self.unselected_tags())
+        self.query_one("#selected_set").update(self.selected)
+        self.query_one("#uselected-set").update(seld.unselected)
 
     def unselected_tags(self) -> TagSet:
         return self.tagset_type(
