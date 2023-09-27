@@ -32,7 +32,7 @@ def build_app(s: list[str], u: list[str]) -> App:
         def compose(self):
             yield FilteredTagSetSelector(s, u)
         def on_click(self, event):
-            self.panic(self.tree)
+            self.log(self.tree)
 
     return SelTestApp
 

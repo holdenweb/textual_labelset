@@ -1,7 +1,13 @@
 ## textual-tagset
 
 A utility to allow easy maintenance of labels/tags
-from a controlled vocabulary.
+from controlled vocabularies.
+
+### Dependency
+
+Besides the usual Python ecosystem the sole requirement
+is [the `poetry` command](https://python-poetry.org/docs/).
+Installation is normally straightforward.
 
 ### Installation
 
@@ -16,68 +22,55 @@ from the project's root directory enter
 
 ### Usage
 
-A `TagSet` is a fixed vocabulary
-in which some or all of the values may be selected.
+A `TagSet` is a set of string tags.
 You won't normally use them directly,
 but you can create one by calling the `TagSet`
-constructor with two sequences,
-one of selected values and the other of
-deselected values.
+constructor with a dict of string values, each
+of which has a unique integer key.
+A more convenient API would clearly be helpful,
+and will likely emerge shortly.
 
-`TagSet`s are presented internally as dictionaries
-in which each label has a unique key.
+A `FilteredTagset` has the same interface as a
+`TagSet` but uses an `Input` to enter a filter
+string value to limit the choices available in
+the `TagSet` for ease of selection.
 
-You create a `TagSetSelector` by providing two_
-sequences, one containing the selected labels and
+You create a `TagSetSelector` by providing two
+dicts, one containing the selected labels and
 the other containing the deselected labels.
+Note that the keys must be unique across both
+dicts.
+
+As you might expect there's also a `FilteredTagSetSelector`,
+which uses a `FilteredTagSet` for the unselected values.
+The assumption here was that many more items would
+remain unselected than _be_ selected,
 
 The default representation shows each tagset
 as a variable-height area of selected values
 next to a similar area of deselected values.
 
-### Usage example
+More documentation will follow on demand.
+No demand, no more documentation :).
 
-The following code gives a simple example.
+### Demonstrations and Code Samples
 
-```python
-"""
-demo.py: show off the features of textual_tagset.
-"""
-from textual.app import App
-from textual_tagset import TagSetSelector
+A simple demonstration of each of the classes is available
+by using `make`. They should all be terminated with `^C`.
+The demos live in _src/textual\_tagset/demo_.
 
-selected = "Yes Oui Ja".split()
-deselected = "No Non Nein".split()
+`make demo1` brings up a simple `TagSet`.
 
-lss = TagSetSelector(selected, deselected)
+`make demo2` shows a `TagSetSelector`.
+   Underlined text is clickable, moving an item from one set to the other.
 
-class TagSetApp(App):
+`make demo3` brings up a `FilteredTagSet` - enter text to see only items matching that text.
 
-    def compose(self):
-        yield lss
+`make demo4` demonstrates the `FilteredTagSetSelector`, in which the unselected tags
+   are filterable though the selected ones are not.
 
-app = TagSetApp()
 
-if __name__ == '__main__':
-    app.run()
-```
-
-With both `textual-dev` and `textual_tagset` installed
-you can run it with the command
-
-    textual run textual_tagset.demo
-
-If you created the `poetry` virtual environment,
-you can run it in that with the command
-
-    poetry run python src/textual_tagset/demo.py
-
-If the necessary virtualenv is already activated,
-you will just need the last two words:
-
-    python src/textual_tagset/demo.py
-
-Here's a short video of the demo in action.
+Here's a short video of a `TagSetSelector` in action.
 ![TagSetSelector in action](tagset_demo.gif)
 
 ### Development
@@ -87,6 +80,7 @@ Development work will aim to increase usability:
 
 1. Make sorting somewhat easier to configure (at present
    it uses a slightly bizarre algorithm to sort names correctly).
-2. Make it easy to configure the formats used for the selected
+2. Make it easier to configure the formats used for the selected
    and deselected items.
+3. Simplify the API.
 

@@ -17,7 +17,7 @@ class ClickableStatic(Static):
         self.action_func = action_func
 
     def action_klick(self, i):
-        return self.action_func(i) if self.action_func is not None else None
+        return self.action_func(i)
 
 
 class TagSet(Widget):
@@ -39,14 +39,14 @@ class TagSet(Widget):
     def __init__(
         self,
         members: dict[int, str],
-        action_func: Callable[[int], None],
-        fmt: str,
+        action_func: Callable[[int], None] = None,
+        fmt: str = "{v}",
         key: Callable[..., object] | None = None,
         *args,
         **kw,
     ):
         super().__init__(*args, **kw)
-        self.action_func = action_func
+        self.action_func = (lambda i: None) if action_func is None else action_func
         self.key = self.local_key if key is None else key
         self.fmt = fmt
         self.members = dict(sorted(members.items(), key=self.key))
@@ -86,7 +86,6 @@ class TagSet(Widget):
         return self.action_func(i)
 
     def render(self):
-        #return Text.from_markup(" ".join(self.fmt.format(i=i, v=v) for (i, v) in self.members.items() if self.filter_string in v))
         return self.static.render()
 
 
