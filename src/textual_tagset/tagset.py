@@ -82,7 +82,6 @@ class TagSet(Widget):
         self.static.update(content)
 
     def action_klick(self, i: int):
-        print("CLICKED ON", i)
         return self.action_func(i)
 
     def render(self):

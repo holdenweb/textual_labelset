@@ -43,5 +43,4 @@ SelTestApp = build_app(selected, deselected)
 app = SelTestApp()
 
 if __name__ == '__main__':
-    print('running')
     app.run()
