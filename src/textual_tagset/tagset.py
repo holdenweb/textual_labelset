@@ -4,17 +4,22 @@ from textual.widgets import Static, Rule, Input
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from rich.text import Text
 
-from typing import Callable
+from typing import Optional, Callable
 
-DEFAULT_SELECTED_FORMAT = "\\[{v} [@click='klick({i})']x[/]]"
-DEFAULT_UNSELECTED_FORMAT = "\\[[@click='klick({i})']{v}[/]]"
-
+DEFAULT_FORMAT = "\\[[@click='klick({i})']{v}[/]]"
+DEFAULT_SELECTED_FORMAT = DEFAULT_FORMAT
+DEFAULT_UNSELECTED_FORMAT = "\\[{v} [@click='klick({i})']x[/]]"
+SELECTED_FORMAT = DEFAULT_SELECTED_FORMAT
+UNSELECTED_FORMAT = DEFAULT_FORMAT
 
 class ClickableStatic(Static):
 
-    def __init__(self, *args, action_func: Callable[[int], None] | None = None, **kw):
+    def __init__(self, *args, action_func: Optional[Callable[[int], None]] = None, **kw):
         super().__init__(*args, **kw)
-        self.action_func = action_func
+        self.action_func = action_func if action_func is not None else self.null_action
+
+    def null_action(self, i):
+        pass
 
     def action_klick(self, i):
         return self.action_func(i)
@@ -41,7 +46,7 @@ class TagSet(Widget):
         members: dict[int, str],
         action_func: Callable[[int], None] = None,
         fmt: str = "{v}",
-        key: Callable[..., object] | None = None,
+        key: Optional[Callable[[int], None]] = None,
         *args,
         **kw,
     ):
@@ -121,8 +126,8 @@ class TagSetSelector(Widget):
         super().__init__(*args, **kw)
         self.s_dict: dict[int, str] = dict(enumerate(s_tags))
         self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.s_tags = TagSet(self.s_dict, fmt=DEFAULT_SELECTED_FORMAT, action_func=self.deselect, id="selected-set")
-        self.u_tags = self.tagset_type(self.u_dict, fmt=DEFAULT_UNSELECTED_FORMAT, action_func=self.select, id="unselected-set")
+        self.s_tags = TagSet(self.s_dict, fmt=SELECTED_FORMAT, action_func=self.deselect, id="selected-set")
+        self.u_tags = self.tagset_type(self.u_dict, fmt=UNSELECTED_FORMAT, action_func=self.select, id="unselected-set")
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
