@@ -3,7 +3,8 @@ demo.py: show off the features of textual_tagset.
 """
 from textual.app import App
 from textual_tagset import TagSetSelector, TagSet, TagSet, FilteredTagSet, FilteredTagSetSelector
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, Center
+from textual.widgets import Static
 
 selected = (
     "Liberty Baxter, Nevada Bray, Tasha Quinn, Teegan Mays, Omar Hendrix, "
@@ -31,9 +32,11 @@ def build_app(s: list[str], u: list[str]) -> App:
     class SelTestApp(App):
         CSS_PATH = "../tagset.tcss"
         def compose(self):
-            yield TagSet(dict(enumerate(s)), action_func=lambda i: None, fmt="[{v}]", key=None)
-            #yield FilteredTagSetSelector(s, u)
-            #yield Horizontal(id="filler")
+            self.tags =  dict(enumerate(s))
+            yield TagSet(self.tags, action_func=lambda i: None, fmt="\[[@click=set_message({i})]{v}[/]]", key=None)
+            yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+        def action_set_message(self, i):
+            self.query_one("#message-box").update(self.tags[i])
         def on_click(self, event):
             self.log(self.tree)
 

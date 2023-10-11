@@ -13,4 +13,6 @@ TagSetSelector { height: auto; }
 
 #lss-selector { height: auto; }
 
-Vertical, Horizontal {height: auto; }
+Vertical, Horizontal { height: auto; }
+
+#message-box { dock: bottom; text-align: center; }

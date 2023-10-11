@@ -14,13 +14,13 @@ def ignore(i):
     pass
 
 
-def build_app(ts_type, members=[], fmt="{v}"):
+def build_app(ts_type, members=[], fmt="{v}", number_from=0):
 
     class TestApp(App):
 
         def __init__(self):
             super().__init__()
-            self.members = dict(enumerate(members))
+            self.members = dict(enumerate(members, start=number_from))
             self.action_func = ignore
             self.fmt = fmt
             # assert ts_type == list
