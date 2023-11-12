@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "textual-tagset"
-version = "0.1.0"
+version = "0.2.1"
 description = "Maintain tag sets easily and visually"
 authors = ["Steve Holden <steve@holdenweb.com>"]
 license = "MIT"
@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ['^3.8']
-textual = "^0.39.0"
+textual = "^0.41.0"
 textual-dev = "^1.2.1"
 
 
