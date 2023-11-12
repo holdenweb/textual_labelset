@@ -33,7 +33,7 @@ def build_app(s: list[str], u: list[str]) -> App:
         CSS_PATH = "../tagset.tcss"
         def compose(self):
             self.tags =  dict(enumerate(s))
-            yield TagSet(self.tags, action_func=lambda i: None, fmt="\[[@click=set_message({i})]{v}[/]]", key=None)
+            yield TagSet(self.tags, action_func=lambda i: None, fmt="[@click=set_message({i})]{v}[/]", key=None, sep="\n")
             yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
         def action_set_message(self, i):
             self.query_one("#message-box").update(self.tags[i])

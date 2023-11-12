@@ -1,11 +1,13 @@
 
-TagSetStatic{ height: auto;  }
+TagSetStatic { height: auto;  }
 
 #tag-set-static { height: auto; }
 
-TagSet { border: yellow 100%; margin: 0 2 0 2; height: auto; width: 1fr; }
+TagSet { background: $primary 25%; border: yellow 100%; margin: 0 2 0 2; height: auto; width: 25%; }
 
 #tag-set { height: auto; }
+
+ClickableStatic { link-hover-background: yellow 100%; link-hover-color: blue 100%; link-style: none; }
 
 TagSetSelector { height: auto; }
 

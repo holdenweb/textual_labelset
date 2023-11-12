@@ -47,6 +47,7 @@ class TagSet(Widget):
         action_func: Callable[[int], None] = None,
         fmt: str = "{v}",
         key: Optional[Callable[[int], None]] = None,
+        sep: str = " ",
         *args,
         **kw,
     ):
@@ -54,6 +55,7 @@ class TagSet(Widget):
         self.action_func = (lambda i: None) if action_func is None else action_func
         self.key = self.local_key if key is None else key
         self.fmt = fmt
+        self.sep = sep
         self.members = dict(sorted(members.items(), key=self.key))
         self.static = ClickableStatic(Text(""), action_func=self.action_klick, id="tagset-static")
 
@@ -83,7 +85,7 @@ class TagSet(Widget):
             for (i, v) in sorted(self.members.items(), key=self.key)
             if self.filter_string in v.lower()
         ]
-        content = Text.from_markup(" ".join(strings))
+        content = Text.from_markup(self.sep.join(strings))
         self.static.update(content)
 
     def action_klick(self, i: int):
