@@ -1,16 +1,11 @@
 from textual.app import App, ComposeResult
+from textual.events import InputEvent
 from textual.widget import Widget
 from textual.widgets import Static, Rule, Input
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from rich.text import Text
 
 from typing import Optional, Callable
-
-DEFAULT_FORMAT = "\\[[@click='klick({i})']{v}[/]]"
-DEFAULT_SELECTED_FORMAT = DEFAULT_FORMAT
-DEFAULT_UNSELECTED_FORMAT = "\\[{v} [@click='klick({i})']x[/]]"
-SELECTED_FORMAT = DEFAULT_SELECTED_FORMAT
-UNSELECTED_FORMAT = DEFAULT_FORMAT
 
 class ClickableStatic(Static):
 
@@ -21,7 +16,7 @@ class ClickableStatic(Static):
     def null_action(self, i):
         pass
 
-    def action_klick(self, i):
+    def action_click(self, i):
         return self.action_func(i)
 
 
@@ -35,7 +30,6 @@ class TagSet(Widget):
         fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
-    filter_string = ""
 
     def local_key(self, x: tuple[int, str]):
         seq = reversed(x[1].split())
@@ -44,7 +38,7 @@ class TagSet(Widget):
     def __init__(
         self,
         members: dict[int, str],
-        action_func: Callable[[int], None] = None,
+        action_func: Optional[Callable[[int], None]] = None,
         fmt: str = "{v}",
         key: Optional[Callable[[int], None]] = None,
         sep: str = " ",
@@ -57,7 +51,8 @@ class TagSet(Widget):
         self.fmt = fmt
         self.sep = sep
         self.members = dict(sorted(members.items(), key=self.key))
-        self.static = ClickableStatic(Text(""), action_func=self.action_klick, id="tagset-static")
+        self.static = ClickableStatic(Text(""), action_func=self.action_click, id="tagset-static")
+        self.filter_string = ""
 
     def push(self, key, value):
         assert key not in self.members
@@ -81,14 +76,14 @@ class TagSet(Widget):
         if members is not None:
             self.members = members
         strings = [
-            self.fmt.format(i=i, v=v)
+            f"\\[[@click='click({i})']{self.fmt.format(i=i, v=v)}[/]]"
             for (i, v) in sorted(self.members.items(), key=self.key)
             if self.filter_string in v.lower()
         ]
         content = Text.from_markup(self.sep.join(strings))
         self.static.update(content)
 
-    def action_klick(self, i: int):
+    def action_click(self, i: int):
         return self.action_func(i)
 
     def render(self):
@@ -102,12 +97,12 @@ class FilteredTagSet(TagSet):
             yield Input(id="filter-string")
             yield self.static
 
-    def on_input_changed(self, event):
+    def on_input_changed(self, event: InputEvent):
         #
         # Probable issue here:
         # We replace the static when the input changes, but we
         # also want to update it when an element is removed or added
-        # rather than creating a whole new TagSetStatic.
+        # rather than creating a whole new TagSetStatic. Maybe.
         #
         self.filter_string = event.input.value.lower()
         super().update()
@@ -124,12 +119,15 @@ class TagSetSelector(Widget):
 
     tagset_type = TagSet
 
-    def __init__(self, s_tags: list[str], u_tags: list[str], *args, **kw) -> None:
+    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", select_hook=None, deselect_hook=None, *args, **kw) -> None:
         super().__init__(*args, **kw)
+        self.sep = sep
         self.s_dict: dict[int, str] = dict(enumerate(s_tags))
         self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.s_tags = TagSet(self.s_dict, fmt=SELECTED_FORMAT, action_func=self.deselect, id="selected-set")
-        self.u_tags = self.tagset_type(self.u_dict, fmt=UNSELECTED_FORMAT, action_func=self.select, id="unselected-set")
+        self.s_tags = self.tagset_type(self.s_dict, action_func=self.action_deselect, id="selected-set", sep=self.sep)
+        self.u_tags = self.tagset_type(self.u_dict, action_func=self.action_select, id="unselected-set", sep=self.sep)
+        self.select_hook = select_hook
+        self.deselect_hook = deselect_hook
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
@@ -140,17 +138,21 @@ class TagSetSelector(Widget):
         self.s_tags.update(members=self.s_dict)
         self.u_tags.update(members=self.u_dict)
 
-    def deselect(self, i: int) -> None:
+    def action_deselect(self, i: int) -> None:
         assert i in self.s_dict
         value = self.s_dict.pop(i)
         self.u_dict[i] = value
         self.update_view()
+        if self.deselect_hook:
+            self.deselect_hook(i, self.u_dict[i])
 
-    def select(self, i: int) -> None:
+    def action_select(self, i: int) -> None:
         assert i in self.u_dict
         value = self.u_dict.pop(i)
         self.s_dict[i] = value
         self.update_view()
+        if self.select_hook:
+            self.select_hook(i, self.s_dict[i])
 
 
 class FilteredTagSetSelector(TagSetSelector):
@@ -184,6 +186,7 @@ class TestApp(App):
 
     def on_click(self, event):
         self.log(self.tree)
+        self.log(self.css_tree)
 
 app = TestApp()
 

@@ -1,20 +1,12 @@
 
-TagSetStatic { height: auto;  }
+#tag-set-static, #tag-set,  TagSet, TagSetSelector, TagSetStatic, Vertical, Horizontal { height: auto; }
 
-#tag-set-static { height: auto; }
+Tagset, TagSetSelector, FilteredTagSetSelector, FilteredTagSet { width: 1fr; }
 
-TagSet { background: $primary 25%; border: yellow 100%; margin: 0 2 0 2; height: auto; width: 25%; }
-
-#tag-set { height: auto; }
+TagSet { background: $primary 25%; border: yellow 100%; margin: 0 2 0 2; width: 1fr; }
 
 ClickableStatic { link-hover-background: yellow 100%; link-hover-color: blue 100%; link-style: none; }
 
-TagSetSelector { height: auto; }
-
-#filler { height: 1fr; }
-
-#lss-selector { height: auto; }
-
-Vertical, Horizontal { height: auto; }
+Button { width: auto; }
 
 #message-box { dock: bottom; text-align: center; }

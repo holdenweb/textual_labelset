@@ -1,48 +1,40 @@
 """
-demo.py: show off the features of textual_tagset.
+demo_tagset.py: show off the features of textual_tagset.
 """
+import sys
+
 from textual.app import App
 from textual_tagset import TagSetSelector, TagSet, TagSet, FilteredTagSet, FilteredTagSetSelector
 from textual.containers import Horizontal, Vertical, Center
-from textual.widgets import Static
-
-selected = (
-    "Liberty Baxter, Nevada Bray, Tasha Quinn, Teegan Mays, Omar Hendrix, "
-    "Shelley Frost, Hyatt Serrano, Mariko Tyler, Grant Hernandez, Kiara Bolton, "
-    "Lucy Hahn, Vladimir Mcmillan, Alvin Byrd, Melanie Coleman, Edan Brady, "
-    "John Hahn, Wyatt Gross, Lionel Knapp, Montana Hoover, Ursa Kiddv, "
-    "Cheyenne Elliott, Nathan Dixon, Jayme Witt, Patricia Barrett, Christen Zimmerman, "
-    "Lesley Booth, Victoria Salinas, Philip Walls, Pearl Martin, Garrett Guzman, "
-    "Brady Decker, Ebony Sampson, Fletcher Ellis, Stewart Crawford, Graiden Mcdowell"
-).split(", ")
-
-deselected = (
-    "Isaiah Larson, Owen Leach, Carter Bowman, Cyrus Pruitt, Bernard Talley, "
-    "Angelica Yates, Garth Bates, Noble Garcia, Florence Pugh, Benedict Glass, "
-    "Logan Kline, Blythe Perkins, Keith Leach, Lisandra Barnes, Baxter Bruce, "
-    "Alfreda Vega, Alana Reyes, Nelle Sosa, Acton Ortiz, Yoshi Wilson, "
-    "Emi Rice, Kalia Washington, Channing Huber, Martina Dyer, Leilani Alford, "
-    "Tucker Phillips, Belle Dodson, Vance Robertson, Conan Weaver, Felicia Huber, "
-    "Kyra Oneil, Shaine Wise, Jamal Finch, Roary Noble, Rafael Stewart"
-).split(", ")
+from textual.widgets import Static, Button
+from textual_tagset.demo.data import selected
 
 
 def build_app(s: list[str], u: list[str]) -> App:
 
-    class SelTestApp(App):
+    class BaseApp(App):
         CSS_PATH = "../tagset.tcss"
-        def compose(self):
-            self.tags =  dict(enumerate(s))
-            yield TagSet(self.tags, action_func=lambda i: None, fmt="[@click=set_message({i})]{v}[/]", key=None, sep="\n")
-            yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
-        def action_set_message(self, i):
-            self.query_one("#message-box").update(self.tags[i])
+        def on_button_pressed(self, e):
+            sys.exit()
         def on_click(self, event):
             self.log(self.tree)
+            self.log(self.css_tree)
+        def set_message(self, m):
+            self.query_one("#message-box").update(m)
+
+    class SelTestApp(BaseApp):
+        def compose(self):
+            self.tags =  dict(enumerate(s))
+            with Horizontal():
+                yield TagSet(self.tags, action_func=self.nmbr_message, key=None, sep="\n")
+                yield Button("Click to quit")
+            yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+        def nmbr_message(self, i):
+            self.set_message(self.tags[i])
 
     return SelTestApp
 
-SelTestApp = build_app(selected, deselected)
+SelTestApp = build_app(selected, [])
 app = SelTestApp()
 
 if __name__ == '__main__':

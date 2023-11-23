@@ -1,38 +1,36 @@
 """
-demo.py: show off the features of textual_tagset.
+demo_tagset_selector.py: demonstrate the basic features of textual_tagset.
 """
+import sys
+
 from textual.app import App
-from textual_tagset import TagSetSelector, TagSet, TagSet, FilteredTagSet, FilteredTagSetSelector
-from textual.containers import Horizontal, Vertical
-
-selected = (
-    "Liberty Baxter, Nevada Bray, Tasha Quinn, Teegan Mays, Omar Hendrix, "
-    "Shelley Frost, Hyatt Serrano, Mariko Tyler, Grant Hernandez, Kiara Bolton, "
-    "Lucy Hahn, Vladimir Mcmillan, Alvin Byrd, Melanie Coleman, Edan Brady, "
-    "John Hahn, Wyatt Gross, Lionel Knapp, Montana Hoover, Ursa Kiddv, "
-    "Cheyenne Elliott, Nathan Dixon, Jayme Witt, Patricia Barrett, Christen Zimmerman, "
-    "Lesley Booth, Victoria Salinas, Philip Walls, Pearl Martin, Garrett Guzman, "
-    "Brady Decker, Ebony Sampson, Fletcher Ellis, Stewart Crawford, Graiden Mcdowell"
-).split(", ")
-
-deselected = (
-    "Isaiah Larson, Owen Leach, Carter Bowman, Cyrus Pruitt, Bernard Talley, "
-    "Angelica Yates, Garth Bates, Noble Garcia, Florence Pugh, Benedict Glass, "
-    "Logan Kline, Blythe Perkins, Keith Leach, Lisandra Barnes, Baxter Bruce, "
-    "Alfreda Vega, Alana Reyes, Nelle Sosa, Acton Ortiz, Yoshi Wilson, "
-    "Emi Rice, Kalia Washington, Channing Huber, Martina Dyer, Leilani Alford, "
-    "Tucker Phillips, Belle Dodson, Vance Robertson, Conan Weaver, Felicia Huber, "
-    "Kyra Oneil, Shaine Wise, Jamal Finch, Roary Noble, Rafael Stewart"
-).split(", ")
+from textual_tagset import TagSetSelector
+from textual.containers import Horizontal
+from textual.widgets import Button, Static
+from textual_tagset.demo.data import selected, deselected
 
 def build_app(s: list[str], u: list[str]) -> App:
 
-    class SelTestApp(App):
+    class BaseApp(App):
         CSS_PATH = "../tagset.tcss"
-        def compose(self):
-            yield TagSetSelector(s, u)
+        def on_button_pressed(self, e):
+            sys.exit()
         def on_click(self, event):
             self.log(self.tree)
+            self.log(self.css_tree)
+        def set_message(self, m):
+            self.query_one("#message-box").update(m)
+
+    class SelTestApp(BaseApp):
+        def compose(self):
+            with Horizontal():
+                yield TagSetSelector(s, u, sep=" ", select_hook=self.log_select, deselect_hook=self.log_deselect)
+                yield Button("Click to Quit")
+            yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+        def log_select(self, i, v):
+            self.set_message(f"{v} selected")
+        def log_deselect(self, i, v):
+            self.set_message(f"{v} deselected")
 
     return SelTestApp
 
