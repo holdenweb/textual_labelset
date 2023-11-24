@@ -1,25 +1,15 @@
 """
 demo_filtered_tagset.py: show selection from a large set.
 """
-import sys
-
 from textual.app import App
-from textual_tagset import TagSetSelector, TagSet, TagSet, FilteredTagSet, FilteredTagSetSelector
-from textual.containers import Horizontal, Vertical
+from textual_tagset import FilteredTagSet
+from textual.containers import Horizontal
 from textual.widgets import Button, Static
 from textual_tagset.demo.data import selected, deselected
 
-def build_app(s: list[str], u: list[str]) -> App:
+from .baseapp import BaseApp
 
-    class BaseApp(App):
-        CSS_PATH = "../tagset.tcss"
-        def on_button_pressed(self, e):
-            sys.exit()
-        def on_click(self, event):
-            self.log(self.tree)
-            self.log(self.css_tree)
-        def set_message(self, m):
-            self.query_one("#message-box").update(m)
+def build_app(s: list[str], u: list[str]) -> App:
 
     class SelTestApp(BaseApp):
         def compose(self):
