@@ -15,6 +15,7 @@ textual-dev = "^1.2.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
 pytest-asyncio = "^0.21.1"
+mypy = "^1.7.0"
 
 [build-system]
 requires = ["poetry-core"]
