@@ -3,28 +3,13 @@ demo_filtered_tagset_selector.py: demonstrate multi-seletion from a large set.
 """
 from textual.app import App
 from textual_tagset import FilteredTagSetSelector
-from textual.containers import Horizontal
-from textual.widgets import Button, Static
 from textual_tagset.demo.data import selected, deselected
 
 from .baseapp import BaseApp
 
-def build_app(s: list[str], u: list[str]) -> App:
-
-    class SelTestApp(BaseApp):
-        def compose(self):
-            with Horizontal():
-                yield FilteredTagSetSelector(s, u, select_hook=self.log_select, deselect_hook=self.log_deselect)
-                yield Button("Click to Quit")
-            yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
-        def log_select(self, i, v):
-            self.set_message(f"{v} selected")
-        def log_deselect(self, i, v):
-            self.set_message(f"{v} deselected")
-
-    return SelTestApp
-
-SelTestApp = build_app(selected, deselected)
+class SelTestApp(BaseApp):
+    def demo_widget(self):
+        return FilteredTagSetSelector(selected, deselected, select_hook=self.log_select, deselect_hook=self.log_deselect)
 
 app = SelTestApp()
 
