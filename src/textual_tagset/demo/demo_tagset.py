@@ -5,7 +5,7 @@ from textual import on
 from textual.app import App
 from textual.containers import Vertical
 from textual.validation import Integer
-from textual.widgets import Input, Button
+from textual.widgets import Input
 from textual_tagset import TagSet
 from textual_tagset.demo.data import random_names
 
@@ -14,11 +14,10 @@ from .baseapp import BaseScreen
 class TagSetScreen(BaseScreen):
 
     def __init__(self, n):
-        super().__init__()
         self.n = n
-
-    def demo_widget(self):
         self.items = dict(enumerate(random_names(self.n)))
+        super().__init__(self.items)
+    def demo_widget(self):
         return TagSet(self.items, action_func=self.log_item, key=None, sep="\n")
 
 class SelTestApp(App):
@@ -31,7 +30,7 @@ class SelTestApp(App):
 
     def compose(self):
         self.input = Input(placeholder="How many names",
-                    validators=[Integer()],
+                    validators=[Integer(1, 4900)],
                     id="name-count")
         yield self.input
 
@@ -47,9 +46,9 @@ class SelTestApp(App):
         self.input.clear()
         self.input.focus()
 
-    @on(TagSetScreen.Done)
-    def tag_set_screen_done(self):
-        self.pop_screen()
+    #@on(TagSetScreen.Done)
+    #def tag_set_screen_done(self):
+        #self.pop_screen()
 
 app = SelTestApp()
 

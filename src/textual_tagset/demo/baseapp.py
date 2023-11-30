@@ -6,10 +6,10 @@ from textual.message import Message
 from textual.widgets import Button, Static
 
 class BaseScreen(Screen):
+    def __init__(self, items, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.items = items
     CSS_PATH = "../tagset.tcss"
-
-    class Done(Message):
-        ...
 
     def compose(self):
         with Horizontal():
@@ -18,7 +18,6 @@ class BaseScreen(Screen):
         yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
     def on_button_pressed(self, e):
         msg = self.Done()
-        self.post_message(msg)
         self.dismiss("Message!")
     def on_click(self, event):
         self.log(self.tree)
