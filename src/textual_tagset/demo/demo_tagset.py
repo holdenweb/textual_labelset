@@ -21,14 +21,26 @@ class TagSetScreen(BaseScreen):
 
 class SelTestApp(App):
 
+    CSS = """
+    Screen {
+        layout: vertical;
+    }
+    """
+
     def compose(self):
-        with Vertical():
-            yield Input(placeholder="How many names", validators=[Integer()])
+        self.input = Input(placeholder="How many names",
+                    validators=[Integer()],
+                    id="name-count")
+        yield self.input
 
     def on_input_submitted(self, event):
-        assert isinstance(event.control.value, str)
         n = int(event.control.value)
-        self.app.push_screen(TagSetScreen(n))
+        self.app.push_screen(TagSetScreen(n), self.reset_inputs)
+        self.reset_inputs()
+
+    def reset_inputs(self):
+        self.input.clear()
+        self.input.focus()
 
 app = SelTestApp()
 
