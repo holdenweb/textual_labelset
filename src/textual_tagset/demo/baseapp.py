@@ -1,10 +1,10 @@
 import sys
 
-from textual.app import App
+from textual.app import Screen
 from textual.containers import Horizontal
 from textual.widgets import Button, Static
 
-class BaseApp(App):
+class BaseScreen(Screen):
     CSS_PATH = "../tagset.tcss"
     def compose(self):
         with Horizontal():
@@ -12,7 +12,7 @@ class BaseApp(App):
             yield Button("Click to Quit")
         yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
     def on_button_pressed(self, e):
-        sys.exit()
+        self.app.pop_screen()
     def on_click(self, event):
         self.log(self.tree)
         self.log(self.css_tree)

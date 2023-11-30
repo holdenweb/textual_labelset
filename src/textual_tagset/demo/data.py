@@ -1,3 +1,5 @@
+from random import choice
+
 selected = (
     "Liberty Baxter, Nevada Bray, Tasha Quinn, Teegan Mays, Omar Hendrix, "
     "Shelley Frost, Hyatt Serrano, Mariko Tyler, Grant Hernandez, Kiara Bolton, "
@@ -18,3 +20,14 @@ deselected = (
     "Kyra Oneil, Shaine Wise, Jamal Finch, Roary Noble, Rafael Stewart"
 ).split(", ")
 
+firstnames = list(set(item.split()[0] for item in selected+deselected))
+lastnames = list(set(item.split()[0] for item in  selected+deselected))
+
+def random_name():
+    return f"{choice(firstnames)} {choice(lastnames)}"
+
+def random_names(n):
+    names = set()
+    while len(names) < n:
+        names.add(random_name())
+    return names
