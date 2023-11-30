@@ -46,10 +46,6 @@ class SelTestApp(App):
         self.input.clear()
         self.input.focus()
 
-    #@on(TagSetScreen.Done)
-    #def tag_set_screen_done(self):
-        #self.pop_screen()
-
 app = SelTestApp()
 
 if __name__ == '__main__':

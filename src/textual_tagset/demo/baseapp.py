@@ -17,7 +17,6 @@ class BaseScreen(Screen):
             yield Button("Click to Quit")
         yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
     def on_button_pressed(self, e):
-        msg = self.Done()
         self.dismiss("Message!")
     def on_click(self, event):
         self.log(self.tree)
