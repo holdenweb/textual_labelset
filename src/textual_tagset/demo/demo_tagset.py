@@ -1,6 +1,7 @@
 """
 demo_tagset.py: show off the features of textual_tagset.
 """
+from textual import on
 from textual.app import App
 from textual.containers import Vertical
 from textual.validation import Integer
@@ -11,6 +12,7 @@ from textual_tagset.demo.data import random_names
 from .baseapp import BaseScreen
 
 class TagSetScreen(BaseScreen):
+
     def __init__(self, n):
         super().__init__()
         self.n = n
@@ -33,14 +35,21 @@ class SelTestApp(App):
                     id="name-count")
         yield self.input
 
-    def on_input_submitted(self, event):
+    @on(Input.Submitted)
+    def input_submitted(self, event):
         n = int(event.control.value)
-        self.app.push_screen(TagSetScreen(n), self.reset_inputs)
+        self.app.push_screen(TagSetScreen(n), self.finished_screen)
+
+    def finished_screen(self, message):
         self.reset_inputs()
 
     def reset_inputs(self):
         self.input.clear()
         self.input.focus()
+
+    @on(TagSetScreen.Done)
+    def tag_set_screen_done(self):
+        self.pop_screen()
 
 app = SelTestApp()
 
