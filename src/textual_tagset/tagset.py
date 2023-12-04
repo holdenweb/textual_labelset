@@ -1,11 +1,11 @@
 from collections.abc import Iterable, Mapping
 
+from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.events import InputEvent
+from textual.containers import Vertical, Horizontal, VerticalScroll
+from textual.events import InputEvent, Message
 from textual.widget import Widget
 from textual.widgets import Static, Rule, Input
-from textual.containers import Vertical, Horizontal, VerticalScroll
-from rich.text import Text
 
 from typing import Optional, Callable
 
@@ -27,11 +27,17 @@ class TagSet(Widget):
     """A set of labels that render as a static.
 
     Args:
-        members: A dictionary of tags, keyed by unique integers
+        members: Either a sequence of tags, or a dictionary of tags,
+        keyed by unique integers.
+
         action_func: The action to be taken when a member's link is clicked.
         fmt: The format of a member in the TagSet's string representation.
         key: The key function used to sort the members.
     """
+    class Selected(Message):
+        def __init__(self, s: str):
+            super().__init__()
+            self.selected = s
 
     def local_key(self, x: tuple[int, str]):
         seq = reversed(x[1].split())
@@ -40,7 +46,6 @@ class TagSet(Widget):
     def __init__(
         self,
         members: dict[int, str], /,
-        action_func: Optional[Callable[[int], None]] | None = None,
         item_fmt: str | None = None,
         link_fmt: str | None = None,
         key: Optional[Callable[[int], None]] | None = None,
@@ -49,12 +54,9 @@ class TagSet(Widget):
         **kw,
     ):
         super().__init__(*args, **kw)
-        self.action_func = (lambda i: None) if action_func is None else action_func
-        self.item_fmt =  "{v}" if item_fmt is None else item_fmt
-        self.link_fmt =  "{v}" if link_fmt is None else link_fmt
+        self.item_fmt = "{v}" if item_fmt is None else item_fmt
+        self.link_fmt = "{v}" if link_fmt is None else link_fmt
         self.key = self.local_key if key is None else key
-        self.item_fmt = item_fmt
-        self.link_fmt = link_fmt
         self.sep = sep
         if not isinstance(members, Mapping):
             members = dict(enumerate(members))
@@ -94,7 +96,7 @@ class TagSet(Widget):
         self.static.update(content)
 
     def action_click(self, i: int):
-        return self.action_func(i)
+        self.post_message(self.Selected(self.members[i]))
 
     def render(self):
         return self.static.render()
@@ -114,7 +116,7 @@ class FilteredTagSet(TagSet):
         # also want to update it when an element is removed or added
         # rather than creating a whole new TagSetStatic. Maybe.
         #
-        self.filter_string = event.input.value.lower()
+        self.filter_string = event.control.value.lower()
         super().update()
 
 class TagSetSelector(Widget):

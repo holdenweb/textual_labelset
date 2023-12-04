@@ -32,7 +32,12 @@ class TagSetScreen(BaseScreen):
         super().__init__(self.items)
 
     def demo_widget(self):
-        return TagSet(self.items, action_func=None, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep)
+        return TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep)
+
+    @on(TagSet.Selected)
+    def tagset_selected(self, event):
+        self.set_message(event.selected)
+
 
 class SelTestApp(App):
 
@@ -55,7 +60,7 @@ class SelTestApp(App):
             "The link text becomes the selection hyperlink for an entry. "
             "The item format must contain a \"!\" to indicate where the "
             "link should appear. The separator is inserted between items."
-            "For text entry the usual Python escape sequences are available."
+            "The usual Python escape sequences are available."
             "\n\nHow many names:""")
             yield self.name_count
             yield Static("Link text:")
@@ -64,10 +69,9 @@ class SelTestApp(App):
             yield self.item_format
             yield Static("Item separator")
             yield self.separator
-        self.type_selector = TagSet(members, action_func=None, item_fmt="{v}", link_fmt="[!]", key=None, sep="\n", id="type-choice")
+        self.type_selector = TagSet(members, item_fmt="{v}", link_fmt="[!]", key=None, sep="\n", id="type-choice")
         with Vertical(id="display"):
             yield Static("Select object type here")
-            yield self.type_selector
 
     @on(Input.Submitted)
     def input_submitted(self, event):
@@ -81,9 +85,6 @@ class SelTestApp(App):
         return codecs.escape_decode(bytes(s, "utf-8"))[0].decode("utf-8")
 
     def finished_screen(self, message):
-        self.reset_inputs()
-
-    def reset_inputs(self):
         self.name_count.focus()
 
 app = SelTestApp()
