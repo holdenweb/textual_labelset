@@ -1,3 +1,5 @@
+from collections.abc import Iterable, Mapping
+
 from textual.app import App, ComposeResult
 from textual.events import InputEvent
 from textual.widget import Widget
@@ -37,20 +39,27 @@ class TagSet(Widget):
 
     def __init__(
         self,
-        members: dict[int, str],
-        action_func: Optional[Callable[[int], None]] = None,
-        fmt: str = "{v}",
-        key: Optional[Callable[[int], None]] = None,
+        members: dict[int, str], /,
+        action_func: Optional[Callable[[int], None]] | None = None,
+        item_fmt: str | None = None,
+        link_fmt: str | None = None,
+        key: Optional[Callable[[int], None]] | None = None,
         sep: str = " ",
         *args,
         **kw,
     ):
         super().__init__(*args, **kw)
         self.action_func = (lambda i: None) if action_func is None else action_func
+        self.item_fmt =  "{v}" if item_fmt is None else item_fmt
+        self.link_fmt =  "{v}" if link_fmt is None else link_fmt
         self.key = self.local_key if key is None else key
-        self.fmt = fmt
+        self.item_fmt = item_fmt
+        self.link_fmt = link_fmt
         self.sep = sep
+        if not isinstance(members, Mapping):
+            members = dict(enumerate(members))
         self.members = dict(sorted(members.items(), key=self.key))
+        self.app.log(members)
         self.static = ClickableStatic(Text(""), action_func=self.action_click, id="tagset-static")
         self.filter_string = ""
 
@@ -75,11 +84,12 @@ class TagSet(Widget):
     def update(self, members=None):
         if members is not None:
             self.members = members
-        strings = [
-            f"\\[[@click='click({i})']{self.fmt.format(i=i, v=v)}[/]]"
-            for (i, v) in sorted(self.members.items(), key=self.key)
-            if self.filter_string in v.lower()
-        ]
+        strings = []
+        for (i, v) in sorted(self.members.items(), key=self.key):
+            if self.filter_string in v.lower():
+                link = f"[@click='click({i})']{self.link_fmt}[/]".format(i=i, v=v)
+                item = self.item_fmt.format(i=i, v=v)
+                strings.append(item.replace("!", link))
         content = Text.from_markup(self.sep.join(strings))
         self.static.update(content)
 
