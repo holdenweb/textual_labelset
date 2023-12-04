@@ -125,6 +125,7 @@ dmypy.json
 
 # WingPro project files
 *.wp?
+wingdbstub.py
 
 .DS_Store
 .bsars
