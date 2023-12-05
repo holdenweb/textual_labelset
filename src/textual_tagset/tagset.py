@@ -35,9 +35,13 @@ class TagSet(Widget):
         key: The key function used to sort the members.
     """
     class Selected(Message):
-        def __init__(self, s: str):
+        def __init__(self, w: Widget, s: str):
             super().__init__()
+            self._control = w
             self.selected = s
+        @property
+        def control(self):
+            return self._control
 
     def local_key(self, x: tuple[int, str]):
         seq = reversed(x[1].split())
@@ -54,7 +58,7 @@ class TagSet(Widget):
         **kw,
     ):
         super().__init__(*args, **kw)
-        self.item_fmt = "{v}" if item_fmt is None else item_fmt
+        self.item_fmt = "[!]" if item_fmt is None else item_fmt
         self.link_fmt = "{v}" if link_fmt is None else link_fmt
         self.key = self.local_key if key is None else key
         self.sep = sep
@@ -96,7 +100,7 @@ class TagSet(Widget):
         self.static.update(content)
 
     def action_click(self, i: int):
-        self.post_message(self.Selected(self.members[i]))
+        self.post_message(self.Selected(self, self.members[i]))
 
     def render(self):
         return self.static.render()

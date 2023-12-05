@@ -9,34 +9,19 @@ from textual.containers import Vertical
 from textual.validation import Integer
 from textual.widgets import Input, Static
 from textual_tagset import TagSet
-from textual_tagset.demo.data import random_names
 
 from .baseapp import BaseScreen
 
 class TagSetScreen(BaseScreen):
 
-    CSS = "TagSetScreen { background: rgba(0, 0, 0, 0.5); }"
-
-    def __init__(
-        self,
-        n,
-        item_fmt: str | None = "\\[!]",
-        link_fmt: str | None = "{v}",
-        sep: str | None = "\n",
-    ):
-        self.n = n
-        self.item_fmt = item_fmt
-        self.link_fmt = link_fmt
-        self.sep = sep
-        self.items =list( random_names(self.n))
-        super().__init__(self.items)
-
     def demo_widget(self):
-        return TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep)
+        self.widget = TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
+        return self.widget
 
-    @on(TagSet.Selected)
-    def tagset_selected(self, event):
-        self.set_message(event.selected)
+    #@on(TagSet.Selected, "#demo-widget")
+    #def tagset_selected(self, event):
+        #self.log(event.control)
+        #self.set_message(event.selected)
 
 
 class SelTestApp(App):
@@ -45,16 +30,19 @@ class SelTestApp(App):
     Screen {
         layout: horizontal;
     }
+    Vertical {
+        border: solid white 75%;
+        margin: 2 2 2 2;
+    }
     """
     CSS_PATH = "../tagset.tcss"
     def compose(self):
-        self.name_count = Input(placeholder="How many names",
+        self.name_count = Input(value="20", placeholder="How many names",
                     validators=[Integer(1, 4900)],
                     id="name-count")
         self.link_text = Input(value="{v}", placeholder="Enter link text format")
         self.item_format = Input(value="[!]", placeholder="Enter entry text format (! becomes link")
         self.separator = Input("\\n", placeholder="Enter separator")
-        members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
         with Vertical():
             yield Static(
             "The link text becomes the selection hyperlink for an entry. "
@@ -69,23 +57,45 @@ class SelTestApp(App):
             yield self.item_format
             yield Static("Item separator")
             yield self.separator
-        self.type_selector = TagSet(members, item_fmt="{v}", link_fmt="[!]", key=None, sep="\n", id="type-choice")
+        members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
+        self.type_selector = TagSet(members, sep="\n", id="type-choice")
         with Vertical(id="display"):
             yield Static("Select object type here")
+            yield self.type_selector
+        self.message_box = Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+        yield self.message_box
 
-    @on(Input.Submitted)
-    def input_submitted(self, event):
+    @on(TagSet.Selected, "#demo-widget")
+    def demo_tagset_selected(self, event):
+        self.set_message(f"{event.selected} selected")
+
+    @on(TagSet.Selected, "#type-choice")
+    def tagset_type_selected(self, event):
         n = int(self.name_count.value)
-        link_fmt = self.escape_managed(self.link_text.value)
-        item_fmt = self.escape_managed(self.item_format.value)
-        sep = self.escape_managed(self.separator.value)
+        link_fmt = self.esc_processed(self.link_text.value)
+        item_fmt = self.esc_processed(self.item_format.value)
+        sep = self.esc_processed(self.separator.value)
         self.app.push_screen(TagSetScreen(n, link_fmt=link_fmt, item_fmt=item_fmt, sep=sep), self.finished_screen)
 
-    def escape_managed(self, s):
+    def esc_processed(self, s):
         return codecs.escape_decode(bytes(s, "utf-8"))[0].decode("utf-8")
 
     def finished_screen(self, message):
         self.name_count.focus()
+
+    def set_message(self, m):
+        self.message_box.update(m)
+    def log_item(self, i):
+        self.set_message(self.items[i])
+    def log_select(self, i, v):
+        self.set_message(f"{v} selected")
+    def log_deselect(self, i, v):
+        self.set_message(f"{v} deselected")
+    def demo_widget(self):
+        raise NotImplementedError
+    def on_click(self, event):
+        self.log(self.tree)
+        self.log(self.css_tree)
 
 app = SelTestApp()
 

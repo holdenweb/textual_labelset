@@ -5,29 +5,28 @@ from textual.containers import Horizontal
 from textual.message import Message
 from textual.widgets import Button, Static
 
+from textual_tagset.demo.data import random_names
+
 class BaseScreen(Screen):
-    def __init__(self, items, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.items = items
+    def __init__(
+        self,
+        n,
+        item_fmt: str | None = "\\[!]",
+        link_fmt: str | None = "{v}",
+        sep: str | None = "\n",
+    ):
+        self.n = n
+        self.item_fmt = item_fmt
+        self.link_fmt = link_fmt
+        self.sep = sep
+        self.items =list(random_names(self.n))
+        super().__init__(self.items)
+
     CSS_PATH = "../tagset.tcss"
 
     def compose(self):
         with Horizontal():
             yield self.demo_widget()
-            yield Button("Click to Quit")
-        yield Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+            yield Button("Click to Dismiss")
     def on_button_pressed(self, e):
         self.dismiss("Message!")
-    def on_click(self, event):
-        self.log(self.tree)
-        self.log(self.css_tree)
-    def set_message(self, m):
-        self.query_one("#message-box").update(m)
-    def log_item(self, i):
-        self.set_message(self.items[i])
-    def log_select(self, i, v):
-        self.set_message(f"{v} selected")
-    def log_deselect(self, i, v):
-        self.set_message(f"{v} deselected")
-    def demo_widget(self):
-        raise NotImplementedError
