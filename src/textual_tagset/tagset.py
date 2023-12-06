@@ -194,7 +194,8 @@ class TestApp(App):
     def __init__(self):
         super().__init__()
         members = dict(enumerate(s))
-        self.component = FilteredTagSet(members, ignore, fmt)
+        self.component = TagSet(members)
+        TagSet(members)
 
     def compose(self):
         with Horizontal():

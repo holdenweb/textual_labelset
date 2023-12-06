@@ -4,7 +4,7 @@ Screen { background: rgba(100, 100, 100, 0.0); }
 
 Tagset, TagSetSelector, FilteredTagSetSelector, FilteredTagSet { width: 1fr; }
 
-TagSet { background: $primary 25%; border: yellow 100%; margin: 0 0 0 0; width: 1fr; }
+TagSet { background: $primary 25%; border: yellow 100%; width: 1fr; }
 
 ClickableStatic { link-hover-background: yellow 100%; link-hover-color: blue 100%; link-style: none; }
 

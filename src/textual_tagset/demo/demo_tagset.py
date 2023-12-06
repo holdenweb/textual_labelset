@@ -18,11 +18,6 @@ class TagSetScreen(BaseScreen):
         self.widget = TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
         return self.widget
 
-    #@on(TagSet.Selected, "#demo-widget")
-    #def tagset_selected(self, event):
-        #self.log(event.control)
-        #self.set_message(event.selected)
-
 
 class SelTestApp(App):
 
@@ -30,26 +25,27 @@ class SelTestApp(App):
     Screen {
         layout: horizontal;
     }
-    Vertical {
-        border: solid white 75%;
-        margin: 2 2 2 2;
+    .top-level {
+        border: white 75%;
     }
     """
     CSS_PATH = "../tagset.tcss"
     def compose(self):
-        self.name_count = Input(value="20", placeholder="How many names",
+        self.name_count = Input(value="10", placeholder="How many names",
                     validators=[Integer(1, 4900)],
                     id="name-count")
         self.link_text = Input(value="{v}", placeholder="Enter link text format")
         self.item_format = Input(value="[!]", placeholder="Enter entry text format (! becomes link")
         self.separator = Input("\\n", placeholder="Enter separator")
-        with Vertical():
+        with Vertical(classes="top-level"):
             yield Static(
             "The link text becomes the selection hyperlink for an entry. "
             "The item format must contain a \"!\" to indicate where the "
             "link should appear. The separator is inserted between items."
-            "The usual Python escape sequences are available."
-            "\n\nHow many names:""")
+            "The usual Python escape sequences are available.\n"
+            "For selectors, the entries will initially be split evenly "
+            "between the two TagSets."
+            "\n\nHow many names:")
             yield self.name_count
             yield Static("Link text:")
             yield self.link_text
@@ -58,8 +54,8 @@ class SelTestApp(App):
             yield Static("Item separator")
             yield self.separator
         members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
-        self.type_selector = TagSet(members, sep="\n", id="type-choice")
-        with Vertical(id="display"):
+        self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x)
+        with Vertical(id="display", classes="top-level"):
             yield Static("Select object type here")
             yield self.type_selector
         self.message_box = Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
@@ -71,6 +67,7 @@ class SelTestApp(App):
 
     @on(TagSet.Selected, "#type-choice")
     def tagset_type_selected(self, event):
+        self.log(f"----------- {event.selected} -----------")
         n = int(self.name_count.value)
         link_fmt = self.esc_processed(self.link_text.value)
         item_fmt = self.esc_processed(self.item_format.value)

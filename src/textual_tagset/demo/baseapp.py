@@ -20,7 +20,7 @@ class BaseScreen(Screen):
         self.link_fmt = link_fmt
         self.sep = sep
         self.items =list(random_names(self.n))
-        super().__init__(self.items)
+        super().__init__("MyBaseScreen")
 
     CSS_PATH = "../tagset.tcss"
 
