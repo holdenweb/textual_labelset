@@ -20,8 +20,8 @@ deselected = (
     "Kyra Oneil, Shaine Wise, Jamal Finch, Roary Noble, Rafael Stewart"
 ).split(", ")
 
-firstnames = list(set(item.split()[0] for item in selected+deselected))
-lastnames = list(set(item.split()[0] for item in  selected+deselected))
+firstnames = list(set(item.split()[0] for item in selected+deselected if item.split()[0]))
+lastnames = list(set(item.split()[1] for item in  selected+deselected if item.split()[1]))
 
 def random_name():
     return f"{choice(firstnames)} {choice(lastnames)}"

@@ -1,9 +1,10 @@
 from collections.abc import Iterable, Mapping
 
 from rich.text import Text
+from textual import on
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, Horizontal, VerticalScroll
-from textual.events import InputEvent, Message
+from textual.containers import Vertical, Horizontal
+from textual.events import Event, InputEvent, Message
 from textual.widget import Widget
 from textual.widgets import Static, Rule, Input
 
@@ -35,9 +36,10 @@ class TagSet(Widget):
         key: The key function used to sort the members.
     """
     class Selected(Message):
-        def __init__(self, w: Widget, s: str):
+        def __init__(self, w: Widget, i: int, s: str):
             super().__init__()
             self._control = w
+            self.index = i
             self.selected = s
         @property
         def control(self):
@@ -65,7 +67,6 @@ class TagSet(Widget):
         if not isinstance(members, Mapping):
             members = dict(enumerate(members))
         self.members = dict(sorted(members.items(), key=self.key))
-        self.app.log(members)
         self.static = ClickableStatic(Text(""), action_func=self.action_click, id="tagset-static")
         self.filter_string = ""
 
@@ -100,7 +101,7 @@ class TagSet(Widget):
         self.static.update(content)
 
     def action_click(self, i: int):
-        self.post_message(self.Selected(self, self.members[i]))
+        self.post_message(self.Selected(self, i, self.members[i]))
 
     def render(self):
         return self.static.render()
@@ -113,15 +114,10 @@ class FilteredTagSet(TagSet):
             yield Input(id="filter-string")
             yield self.static
 
-    def on_input_changed(self, event: InputEvent):
-        #
-        # Probable issue here:
-        # We replace the static when the input changes, but we
-        # also want to update it when an element is removed or added
-        # rather than creating a whole new TagSetStatic. Maybe.
-        #
+    @on(Input.Changed)
+    def input_changed(self, event: Input.Changed):
         self.filter_string = event.control.value.lower()
-        super().update()
+        self.update()
 
 class TagSetSelector(Widget):
     """
@@ -135,15 +131,24 @@ class TagSetSelector(Widget):
 
     tagset_type = TagSet
 
-    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", select_hook=None, deselect_hook=None, *args, **kw) -> None:
+    class Moved(Message):
+        def __init__(self, w, i, v, op):
+            super().__init__()
+            self._control = w
+            self.index = i
+            self.value = v
+            self.operation = op
+        @property
+        def control(self):
+            return self._control
+
+    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", *args, **kw) -> None:
         super().__init__(*args, **kw)
         self.sep = sep
         self.s_dict: dict[int, str] = dict(enumerate(s_tags))
         self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.s_tags = self.tagset_type(self.s_dict, action_func=self.action_deselect, id="selected-set", sep=self.sep)
-        self.u_tags = self.tagset_type(self.u_dict, action_func=self.action_select, id="unselected-set", sep=self.sep)
-        self.select_hook = select_hook
-        self.deselect_hook = deselect_hook
+        self.s_tags = self.tagset_type(self.s_dict, id="selected-set", sep=self.sep)
+        self.u_tags = self.tagset_type(self.u_dict, id="unselected-set", sep=self.sep)
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
@@ -154,21 +159,32 @@ class TagSetSelector(Widget):
         self.s_tags.update(members=self.s_dict)
         self.u_tags.update(members=self.u_dict)
 
-    def action_deselect(self, i: int) -> None:
+    @on(TagSet.Selected, "#selected-set")
+    def deselect(self, e: TagSet.Selected) -> None:
+        self.app.log("Triggered deselect")
+        i = e.index
+        self.app.log(self.s_dict)
+        self.app.log(f"Index: {i}")
+        self.app.log(f"Value: {e.selected}")
         assert i in self.s_dict
         value = self.s_dict.pop(i)
         self.u_dict[i] = value
         self.update_view()
-        if self.deselect_hook:
-            self.deselect_hook(i, self.u_dict[i])
+        self.post_message(TagSetSelector.Moved(self, e.index, e.selected, "deselected"))
 
-    def action_select(self, i: int) -> None:
+    @on(TagSet.Selected, "#unselected-set")
+    def select(self, e: TagSet.Selected, ) -> None:
+        self.app.log("Triggered select")
+        i = e.index
+        self.app.log(self.u_dict)
+        self.app.log(f"Index: {i}")
+        self.app.log(f"Value: {e.selected}")
         assert i in self.u_dict
         value = self.u_dict.pop(i)
         self.s_dict[i] = value
         self.update_view()
-        if self.select_hook:
-            self.select_hook(i, self.s_dict[i])
+        self.post_message(TagSetSelector.Moved(self, e.index, e.selected, "selected"))
+
 
 
 class FilteredTagSetSelector(TagSetSelector):
