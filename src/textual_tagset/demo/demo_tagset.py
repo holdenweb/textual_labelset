@@ -45,12 +45,14 @@ class SelTestApp(App):
 
     CSS = """
     Screen {
+        layers: bottom top;
         layout: horizontal;
     }
     .top-level {
         border: white 75%;
         height: 1fr;
      }
+     TagSet { layer: bottom; }
     """
     CSS_PATH = "../tagset.tcss"
 
@@ -80,7 +82,7 @@ class SelTestApp(App):
                 yield Static("Item separator")
                 yield self.separator
             members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
-            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x)
+            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="!")
             with Vertical(id="display", classes="top-level"):
                 yield Static("Select object type here")
                 yield self.type_selector
