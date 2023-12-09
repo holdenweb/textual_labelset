@@ -1,22 +1,16 @@
 import sys
 
 from textual.app import Screen
-from textual.containers import Horizontal, VerticalScroll
+from textual.screen import ModalScreen
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.message import Message
 from textual.widgets import Button, Static
 
 from textual_tagset.demo.data import random_names
 
-class BaseScreen(Screen):
+class BaseScreen(ModalScreen):
 
-    CSS = """
-    #widget-container {
-        height: 1fr;
-    }
-    #message-box {
-        dock: bottom; text-align: center;
-    }
-    """
+    CSS_PATH = "basescreen.tcss"
 
     def __init__(
         self,
@@ -33,12 +27,13 @@ class BaseScreen(Screen):
         super().__init__("MyBaseScreen")
 
     def compose(self):
-        self.message_box = Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
-        with Horizontal(id="widget-container"):
-            with VerticalScroll():
-                yield self.demo_widget()
-            yield Button("Click to Dismiss")
-        yield self.message_box
+        with Vertical(id="tagset-dialog"):
+            self.message_box = Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+            with Horizontal(id="widget-container"):
+                with VerticalScroll():
+                    yield self.demo_widget()
+                yield Button("Click to Dismiss")
+            yield self.message_box
 
     def on_button_pressed(self, e):
         self.dismiss("Message!")

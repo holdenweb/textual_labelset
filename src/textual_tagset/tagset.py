@@ -119,7 +119,7 @@ class FilteredTagSet(TagSet):
         self.filter_string = event.control.value.lower()
         self.update()
 
-class TagSetSelector(Widget):
+class SelectorBase(Widget):
     """
     Select a set of labels from a closed vocabulary.
 
@@ -129,7 +129,8 @@ class TagSetSelector(Widget):
     """
     CSS_PATH = "tagset.tcss"
 
-    tagset_type = TagSet
+    class Meta:
+        abstract = True
 
     class Moved(Message):
         def __init__(self, w, i, v, op):
@@ -161,11 +162,7 @@ class TagSetSelector(Widget):
 
     @on(TagSet.Selected, "#selected-set")
     def deselect(self, e: TagSet.Selected) -> None:
-        self.app.log("Triggered deselect")
         i = e.index
-        self.app.log(self.s_dict)
-        self.app.log(f"Index: {i}")
-        self.app.log(f"Value: {e.selected}")
         assert i in self.s_dict
         value = self.s_dict.pop(i)
         self.u_dict[i] = value
@@ -174,22 +171,25 @@ class TagSetSelector(Widget):
 
     @on(TagSet.Selected, "#unselected-set")
     def select(self, e: TagSet.Selected, ) -> None:
-        self.app.log("Triggered select")
         i = e.index
-        self.app.log(self.u_dict)
-        self.app.log(f"Index: {i}")
-        self.app.log(f"Value: {e.selected}")
         assert i in self.u_dict
         value = self.u_dict.pop(i)
         self.s_dict[i] = value
         self.update_view()
         self.post_message(TagSetSelector.Moved(self, e.index, e.selected, "selected"))
 
+class TagSetSelector(SelectorBase):
+
+    tagset_type = TagSet
 
 
 class FilteredTagSetSelector(TagSetSelector):
     """
     TagSetSelector with a custom layout.
+
+    We subclass TagSetSelector rather than SelectorBase
+    so messages can be checked as coing from the former
+    class.
     """
     tagset_type = FilteredTagSet
 
