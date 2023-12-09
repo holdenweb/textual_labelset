@@ -5,7 +5,7 @@ import codecs
 
 from textual import on
 from textual.app import App
-from textual.containers import Vertical, Horizontal
+from textual.containers import VerticalScroll, Horizontal
 from textual.validation import Integer
 from textual.widgets import Input, Static, Button
 from textual_tagset import TagSet, FilteredTagSet, TagSetSelector, FilteredTagSetSelector
@@ -44,19 +44,15 @@ selector = {
 class SelTestApp(App):
 
     CSS = """
-    Screen {
-        layers: bottom top;
-        layout: horizontal;
-    }
     .top-level {
         border: white 75%;
         height: 1fr;
      }
-     TagSet { layer: bottom; }
     """
     CSS_PATH = "../tagset.tcss"
 
     def compose(self):
+
         self.name_count = Input(value="10", placeholder="How many names",
                     validators=[Integer(1, 4690)],
                     id="name-count")
@@ -65,7 +61,7 @@ class SelTestApp(App):
         self.separator = Input("\\n", placeholder="Enter separator")
         horiz = Horizontal(id="container")
         with horiz:
-            with Vertical(classes="top-level"):
+            with VerticalScroll(classes="top-level"):
                 yield Static(
                 "The link text becomes the selection hyperlink for an entry. "
                 "The item format must contain a \"!\" to indicate where the "
@@ -82,12 +78,12 @@ class SelTestApp(App):
                 yield Static("Item separator")
                 yield self.separator
             members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
-            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="!")
-            with Vertical(id="display", classes="top-level"):
+            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]")
+            with VerticalScroll(id="display", classes="top-level"):
                 yield Static("Select object type here")
                 yield self.type_selector
                 yield Button("Quit")
-            self.message_box = Static(":eyes: WATCH THIS SPACE :eyes:", id="message-box")
+            self.message_box = Static("", id="message-box")
             yield self.message_box
 
     @on(TagSet.Selected, "#type-choice")
@@ -98,6 +94,7 @@ class SelTestApp(App):
         sep = self.esc_processed(self.separator.value)
         screen_type = selector[event.selected]
         self.app.push_screen(screen_type(n, link_fmt=link_fmt, item_fmt=item_fmt, sep=sep), self.finished_screen)
+
 
     @on(TagSet.Selected, "#demo-widget")
     def demo_tagset_selected(self, event):
@@ -133,8 +130,8 @@ class SelTestApp(App):
         #self.log(self.css_tree)
 
     @on(Button.Pressed)
-    async def button_pressed(self):
-        await self.action_quit()
+    def button_pressed(self):
+        self.exit()
 
 app = SelTestApp()
 

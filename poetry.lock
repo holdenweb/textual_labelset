@@ -741,13 +741,13 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "textual"
-version = "0.41.0"
+version = "0.44.1"
 description = "Modern Text User Interface framework"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "textual-0.41.0-py3-none-any.whl", hash = "sha256:ebf5f04a96721adb8685aae32a98d4a4098dafbfef59b1fb43ca7ac2c1ed5049"},
-    {file = "textual-0.41.0.tar.gz", hash = "sha256:73fb675a90ddded17d59ebd864dedaf82a3e7377e68ba1601581281dfd47ea86"},
+    {file = "textual-0.44.1-py3-none-any.whl", hash = "sha256:19cfd3a0c623bff02cc80d872ba3e93e1a5b77289fecf74c16ffcfa7407b49a1"},
+    {file = "textual-0.44.1.tar.gz", hash = "sha256:7a45b85943957095b97d0a90c4fa4d3e1028fa26493c0720f403d879157a6589"},
 ]
 
 [package.dependencies]
@@ -934,4 +934,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "d8143ddf9ddb5bb1a77faee1231aed7576a0032fa9bb9e5fde0f31db6a549567"
+content-hash = "770f4161e02c6c328577308fca1dedd9f34529ab10a1968f80c01117cadfc6cd"
