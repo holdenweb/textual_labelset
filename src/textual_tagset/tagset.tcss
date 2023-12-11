@@ -8,4 +8,15 @@ ClickableStatic { link-background-hover: yellow 100%; link-color-hover: blue 100
 
 Button { width: auto; border: round; }
 
-#message-box { dock: bottom; text-align: center; }
+#message-box { text-align: center; }
+
+#message {
+    dock: bottom;
+    max-height: 40%;
+    height: auto;
+}
+
+.top-level {
+    border: white 75%;
+    height: 1fr;
+ }

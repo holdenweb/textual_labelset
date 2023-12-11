@@ -15,6 +15,10 @@ BaseScreen {
 #message-box {
     text-align: center;
 }
+#message {
+    max-height: 40%;
+    dock: bottom;
+}
 Input, Button {
     border: solid yellow;
 }

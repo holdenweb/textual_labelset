@@ -5,10 +5,10 @@ import codecs
 
 from textual import on
 from textual.app import App
-from textual.containers import VerticalScroll, Horizontal
+from textual.containers import VerticalScroll, Horizontal, Vertical
 from textual.validation import Integer
 from textual.widgets import Input, Static, Button
-from textual_tagset import TagSet, FilteredTagSet, TagSetSelector, FilteredTagSetSelector
+from .. import TagSet, FilteredTagSet, TagSetSelector, FilteredTagSetSelector
 
 from .baseapp import BaseScreen
 
@@ -44,47 +44,45 @@ selector = {
 class SelTestApp(App):
 
     CSS = """
-    .top-level {
-        border: white 75%;
-        height: 1fr;
-     }
     """
     CSS_PATH = "../tagset.tcss"
 
     def compose(self):
 
-        self.name_count = Input(value="10", placeholder="How many names",
+        self.name_count = Input(value="40", placeholder="How many names",
                     validators=[Integer(1, 4690)],
                     id="name-count")
         self.link_text = Input(value="{v}", placeholder="Enter link text format")
         self.item_format = Input(value="[!]", placeholder="Enter entry text format (! becomes link")
         self.separator = Input("\\n", placeholder="Enter separator")
         horiz = Horizontal(id="container")
-        with horiz:
-            with VerticalScroll(classes="top-level"):
-                yield Static(
-                "The link text becomes the selection hyperlink for an entry. "
-                "The item format must contain a \"!\" to indicate where the "
-                "link should appear. The separator is inserted between items. "
-                "The usual Python escape sequences are available.\n"
-                "For selectors, the entries are initially split evenly "
-                "between the two TagSets."
-                "\n\nHow many names:")
-                yield self.name_count
-                yield Static("Link text:")
-                yield self.link_text
-                yield Static("Item format (link replaces !)")
-                yield self.item_format
-                yield Static("Item separator")
-                yield self.separator
-            members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
-            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]", modal=False)
-            with VerticalScroll(id="display", classes="top-level"):
-                yield Static("Select object type here")
-                yield self.type_selector
-                yield Button("Quit")
-            self.message_box = Static("", id="message-box")
-            yield self.message_box
+        with Vertical():
+            with horiz:
+                with VerticalScroll(classes="top-level"):
+                    yield Static(
+                    "The link text becomes the selection hyperlink for an entry. "
+                    "The item format must contain a \"!\" to indicate where the "
+                    "link should appear. The separator is inserted between items. "
+                    "The usual Python escape sequences are available.\n"
+                    "For selectors, the entries are initially split evenly "
+                    "between the two TagSets."
+                    "\n\nHow many names:")
+                    yield self.name_count
+                    yield Static("Link text:")
+                    yield self.link_text
+                    yield Static("Item format (link replaces !)")
+                    yield self.item_format
+                    yield Static("Item separator")
+                    yield self.separator
+                members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
+                self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]", modal=False)
+                with VerticalScroll(id="display", classes="top-level"):
+                    yield Static("Select object type here")
+                    yield self.type_selector
+                    yield Button("Quit")
+            with VerticalScroll(id="message"):
+                self.message_box = Static("", id="message-box")
+                yield self.message_box
 
     @on(TagSet.Selected, "#type-choice")
     async def tagset_type_selected(self, event):
