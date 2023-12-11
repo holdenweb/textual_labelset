@@ -4,7 +4,7 @@ from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
-from textual.events import Event, InputEvent, Message
+from textual.events import Event, InputEvent, Message, Key
 from textual.widget import Widget
 from textual.widgets import Static, Rule, Input
 
@@ -12,15 +12,23 @@ from typing import Optional, Callable
 
 class ClickableStatic(Static):
 
+    class Clicked(Message):
+        def __init__(self, w, i):
+            super().__init__()
+            self._control = w
+            self.i = i
+        @property
+        def control(self):
+            return _control
+
     def __init__(self, *args, action_func: Optional[Callable[[int], None]] = None, **kw):
         super().__init__(*args, **kw)
-        self.action_func = action_func if action_func is not None else self.null_action
 
     def null_action(self, i):
         pass
 
     def action_click(self, i):
-        return self.action_func(i)
+        self.post_message(self.Clicked(self, i))
 
 
 class TagSet(Widget):
@@ -56,6 +64,7 @@ class TagSet(Widget):
         link_fmt: str | None = None,
         key: Optional[Callable[[int], None]] | None = None,
         sep: str = " ",
+        modal: bool = True,
         *args,
         **kw,
     ):
@@ -64,11 +73,14 @@ class TagSet(Widget):
         self.link_fmt = "{v}" if link_fmt is None else link_fmt
         self.key = self.local_key if key is None else key
         self.sep = sep
+        self.modal = modal
         if not isinstance(members, Mapping):
             members = dict(enumerate(members))
         self.members = dict(sorted(members.items(), key=self.key))
-        self.static = ClickableStatic(Text(""), action_func=self.action_click, id="tagset-static")
+        self.static = ClickableStatic(Text(""), id="tagset-static")
         self.filter_string = ""
+        self.can_focus = True
+        self.key_value = None
 
     def push(self, key, value):
         assert key not in self.members
@@ -101,11 +113,27 @@ class TagSet(Widget):
         self.static.update(content)
 
     def action_click(self, i: int):
-        self.post_message(self.Selected(self, i, self.members[i]))
+        self.key_value = self.members[i]
+        self.post_message(self.Selected(self, self.key_value))
 
     def render(self):
         return self.static.render()
 
+    def result(self):
+        return self.key_value
+
+    @on(ClickableStatic.Clicked)
+    def tagset_selected(self, event: Selected):
+        """
+        When to TagSet is modal, the selected element is returned
+        as the result of the modal screen. Otherwise the Selected
+        message bubbles to the DOM parent of the TagSet.
+        """
+        self.app.log(self.tree)
+        if self.modal:
+            self.screen.dismiss(self.members[event.i])
+        else:
+            self.post_message(self.Selected(self, i := event.i, self.members[i]))
 
 class FilteredTagSet(TagSet):
 
@@ -118,6 +146,10 @@ class FilteredTagSet(TagSet):
     def input_changed(self, event: Input.Changed):
         self.filter_string = event.control.value.lower()
         self.update()
+
+    @on(Input.Submitted)
+    def input_submitted(self, event: Input.Submitted):
+        pass
 
 class SelectorBase(Widget):
     """
@@ -143,18 +175,34 @@ class SelectorBase(Widget):
         def control(self):
             return self._control
 
-    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", *args, **kw) -> None:
+
+    class Selected(Message):
+        def __init__(self, w, values):
+            super().__init__()
+            self._control = w
+            self.values = values
+        @property
+        def control(self):
+            return self._control
+
+    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", modal: bool = False,
+                 *args, **kw) -> None:
         super().__init__(*args, **kw)
         self.sep = sep
         self.s_dict: dict[int, str] = dict(enumerate(s_tags))
         self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.s_tags = self.tagset_type(self.s_dict, id="selected-set", sep=self.sep)
-        self.u_tags = self.tagset_type(self.u_dict, id="unselected-set", sep=self.sep)
+        self.s_tags = self.tagset_type(self.s_dict, id="selected-set", sep=self.sep, modal=False)
+        self.u_tags = self.tagset_type(self.u_dict, id="unselected-set", sep=self.sep, modal=False)
+        self.modal = modal
+        self.can_focus = True
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
             yield self.s_tags
             yield self.u_tags
+
+    def result(self):
+        return list(self.s_dict.values())
 
     def update_view(self) -> None:
         self.s_tags.update(members=self.s_dict)
@@ -162,21 +210,30 @@ class SelectorBase(Widget):
 
     @on(TagSet.Selected, "#selected-set")
     def deselect(self, e: TagSet.Selected) -> None:
+        e.stop()
         i = e.index
         assert i in self.s_dict
         value = self.s_dict.pop(i)
         self.u_dict[i] = value
         self.update_view()
-        self.post_message(TagSetSelector.Moved(self, e.index, e.selected, "deselected"))
+        self.post_message(self.Moved(self, e.index, e.selected, "deselected"))
 
     @on(TagSet.Selected, "#unselected-set")
     def select(self, e: TagSet.Selected, ) -> None:
+        e.stop()
         i = e.index
         assert i in self.u_dict
         value = self.u_dict.pop(i)
         self.s_dict[i] = value
         self.update_view()
-        self.post_message(TagSetSelector.Moved(self, e.index, e.selected, "selected"))
+        self.post_message(self.Moved(self, e.index, e.selected, "selected"))
+
+    @on(Input.Submitted)
+    def input_submitted(self, e: Input.Submitted):
+        if self.modal:
+            self.screen.dismiss(self.s_dict.values())
+        else:
+            self.post_message(self.Selected(self, self.s_dict.values()))
 
 class TagSetSelector(SelectorBase):
 

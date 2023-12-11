@@ -7,7 +7,7 @@ BaseScreen {
 #tagset-dialog {
     height: 80%;
     width: 80%;
-    border: double green;
+/*    border: double green; */
 }
 #widget-container {
     height: 1fr;

@@ -65,9 +65,9 @@ class SelTestApp(App):
                 yield Static(
                 "The link text becomes the selection hyperlink for an entry. "
                 "The item format must contain a \"!\" to indicate where the "
-                "link should appear. The separator is inserted between items."
+                "link should appear. The separator is inserted between items. "
                 "The usual Python escape sequences are available.\n"
-                "For selectors, the entries will initially be split evenly "
+                "For selectors, the entries are initially split evenly "
                 "between the two TagSets."
                 "\n\nHow many names:")
                 yield self.name_count
@@ -78,7 +78,7 @@ class SelTestApp(App):
                 yield Static("Item separator")
                 yield self.separator
             members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
-            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]")
+            self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]", modal=False)
             with VerticalScroll(id="display", classes="top-level"):
                 yield Static("Select object type here")
                 yield self.type_selector
@@ -87,14 +87,14 @@ class SelTestApp(App):
             yield self.message_box
 
     @on(TagSet.Selected, "#type-choice")
-    def tagset_type_selected(self, event):
+    async def tagset_type_selected(self, event):
         n = int(self.name_count.value)
         link_fmt = self.esc_processed(self.link_text.value)
         item_fmt = self.esc_processed(self.item_format.value)
         sep = self.esc_processed(self.separator.value)
         screen_type = selector[event.selected]
-        self.app.push_screen(screen_type(n, link_fmt=link_fmt, item_fmt=item_fmt, sep=sep), self.finished_screen)
-
+        await self.app.push_screen(screen_type(n, link_fmt=link_fmt, item_fmt=item_fmt, sep=sep), self.finished_screen)
+        self.app.query_one("#widget-container").focus()
 
     @on(TagSet.Selected, "#demo-widget")
     def demo_tagset_selected(self, event):
@@ -108,6 +108,7 @@ class SelTestApp(App):
         return codecs.escape_decode(bytes(s, "utf-8"))[0].decode("utf-8")
 
     def finished_screen(self, message):
+        self.set_message(f"{message} selected")
         self.name_count.focus()
 
     def set_message(self, m):
