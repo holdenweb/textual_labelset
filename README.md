@@ -1,24 +1,49 @@
-## textual-tagset
+## textual_tagset
 
-A utility to allow easy maintenance of labels/tags
-from controlled vocabularies.
+A utility to allow selection of choices, either singly or in groups.
 
 ### Dependency
 
 Besides the usual Python ecosystem the sole requirement
-is [the `poetry` command](https://python-poetry.org/docs/).
+is the [textual package](https://textualize.io/) itself.
+For development you will need [the `poetry` command](https://python-poetry.org/docs/).
 Installation is normally straightforward.
 
 ### Installation
 
-`textual_tagset` isn't yet available on PyPI, but will be shortly.
+`textual_tagset` isn't currently available on PyPI, but will be.
+At present I'm interested in gathering comments.
+For the moment, please follow these instructions.
 
-We always recommend Python development work is performed
+    git clone git@github.com:holdenweb/textual_tagset.git
+
+if you prefer to use HTTPS:
+
+    git clone https://github.com/holdenweb/textual_tagset.git
+
+In either case, change into the directory you just created.
+
+    cd textual_tagset
+
+We recommend you perform Python development work
 inside a virtual environment.
 To create a virtual environment with `textual_tagset` already installed,
-from the project's root directory enter
+first select your Python version.
+Textual_tagset supports Python 3.8 onwards.
+
+    poetry env create 3.11
+
+Then enter
 
     poetry install
+
+To build pip-installable artefacts, run
+
+    poetry build
+
+This will create `dist/textual_tagset-X.Y.Z.tar.gz` and
+`dist/textual_tagset-X.Y.Z-py3-none-any.whl`, either of
+which can be installed with pip.
 
 ### Usage
 
@@ -31,22 +56,22 @@ A more convenient API would clearly be helpful,
 and will likely emerge shortly.
 
 A `FilteredTagset` has the same interface as a
-`TagSet` but uses an `Input` to enter a filter
+`TagSet` but provideses an `Input` to enter a filter
 string value to limit the choices available in
 the `TagSet` for ease of selection.
 
 You create a `TagSetSelector` by providing two
 dicts, one containing the selected labels and
 the other containing the deselected labels.
-Note that the keys must be unique across both
-dicts.
+Note that the keys must be nnumeric, and unique across
+both dicts.
 
 As you might expect there's also a `FilteredTagSetSelector`,
-which uses a `FilteredTagSet` for the unselected values.
+which uses `FilteredTagSet`s for the values.
 The assumption here was that many more items would
 remain unselected than _be_ selected,
 
-The default representation shows each tagset
+The default representation  of a `FilteredtTagSetSelector` shows each tagset
 as a variable-height area of selected values
 next to a similar area of deselected values.
 
@@ -56,26 +81,10 @@ No demand, no more documentation :).
 ### Demonstrations and Code Samples
 
 A simple demonstration of each of the classes is available
-by using `make`. They should all be terminated with `^C`.
-The demos live in _src/textual\_tagset/demo_.
+by using `make demo`. NOTE: **to submit the result of the
+FilteredTagSet and the FilteredTagSetSelector you need to
+press Enter!**
 
-`make demo1` brings up a simple `TagSet`.
-
-`make demo2` shows a `TagSetSelector`.
-   Underlined text is clickable, moving an item from one set to the other.
-
-`make demo3` brings up a `FilteredTagSet` - enter text to see only items matching that text.
-
-`make demo4` demonstrates the `FilteredTagSetSelector`, in which the unselected tags
-   are filterable though the selected ones are not.
-
-
-Here's a short video of a `TagSetSelector` in action.
-![TagSetSelector in action](tagset_demo.gif)
-
-### Development
-
-This code is under construction.
 Development work will aim to increase usability:
 
 1. Make sorting somewhat easier to configure (at present
