@@ -27,7 +27,7 @@ class BaseScreen(ModalScreen):
         self.items = list(random_names(self.n))
         super().__init__("MyBaseScreen")
         self.main_widget = self.demo_widget()
-        # self.main_widget.can_focus = True
+        self.modal = True
 
     def compose(self):
         with Vertical(id="tagset-dialog"):

@@ -1,13 +1,31 @@
-#tag-set-static, #tag-set,  TagSet, TagSetSelector, TagSetStatic, Vertical, Horizontal { height: auto; }
+#tag-set-static, #tag-set,  TagSet, TagSetSelector, TagSetStatic, Vertical, Horizontal {
+    height: auto;
+}
 
-Tagset, TagSetSelector, FilteredTagSetSelector, FilteredTagSet { width: auto; }
+Tagset, TagSetSelector, FilteredTagSetSelector, FilteredTagSet {
+    width: auto;
+}
 
-TagSet { background: $primary 25%; border: yellow 100%; width: 1fr; }
+TagSet {
+    background: $primary 25%;
+    border: yellow 100%;
+    width: 1fr;
+}
 
-ClickableStatic { link-background-hover: yellow 100%; link-color-hover: blue 100%; link-style: none; }
+ClickableStatic {
+    link-background-hover: yellow 100%;
+    link-color-hover: blue 100%;
+    link-style: none;
+}
 
-Button { width: auto; border: round; }
+Button {
+    width: auto;
+    border: round;
+}
 
+Input {
+    min-height: 3;
+}
 #message-box { text-align: center; }
 
 #message {
@@ -16,6 +34,10 @@ Button { width: auto; border: round; }
     height: auto;
 }
 
+#questions {
+    layout: grid;
+    grid-size: 2;
+}
 .top-level {
     border: white 75%;
     height: 1fr;

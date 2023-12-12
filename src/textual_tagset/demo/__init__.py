@@ -5,40 +5,40 @@ import codecs
 
 from textual import on
 from textual.app import App
-from textual.containers import VerticalScroll, Horizontal, Vertical
+from textual.containers import VerticalScroll, Horizontal, Vertical, Grid
 from textual.validation import Integer
 from textual.widgets import Input, Static, Button
 from .. import TagSet, FilteredTagSet, TagSetSelector, FilteredTagSetSelector
 
-from .baseapp import BaseScreen
+from .basescreen import BaseScreen
 
-class TagSetScreen(BaseScreen):
+class ModalTagSet(BaseScreen):
 
     def demo_widget(self):
         return TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
 
-class FilteredTagSetScreen(BaseScreen):
+class ModalFilteredTagSet(BaseScreen):
 
     def demo_widget(self):
         return FilteredTagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
 
-class TagSetSelectorScreen(BaseScreen):
+class ModalTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
         return TagSetSelector(self.items[:s], self.items[s:], id="demo-widget")
 
-class FilteredTagSetSelectorScreen(BaseScreen):
+class ModalFilteredTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
         return FilteredTagSetSelector(self.items[:s], self.items[s:], id="demo-widget")
 
 selector = {
-    "TagSet": TagSetScreen,
-    "TagSetSelector": TagSetSelectorScreen,
-    "FilteredTagSet": FilteredTagSetScreen,
-    "FilteredTagSetSelector": FilteredTagSetSelectorScreen,
+    "TagSet": ModalTagSet,
+    "TagSetSelector": ModalTagSetSelector,
+    "FilteredTagSet": ModalFilteredTagSet,
+    "FilteredTagSetSelector": ModalFilteredTagSetSelector,
 }
 
 class SelTestApp(App):
@@ -65,19 +65,20 @@ class SelTestApp(App):
                     "link should appear. The separator is inserted between items. "
                     "The usual Python escape sequences are available.\n"
                     "For selectors, the entries are initially split evenly "
-                    "between the two TagSets."
-                    "\n\nHow many names:")
-                    yield self.name_count
-                    yield Static("Link text:")
-                    yield self.link_text
-                    yield Static("Item format (link replaces !)")
-                    yield self.item_format
-                    yield Static("Item separator")
-                    yield self.separator
+                    "between the two TagSets.")
+                    with Grid(id="questions"):
+                        yield Static("\nHow many names:")
+                        yield self.name_count
+                        yield Static("\nLink text:")
+                        yield self.link_text
+                        yield Static("Item format (link replaces!)")
+                        yield self.item_format
+                        yield Static("\nItem separator")
+                        yield self.separator
                 members = ["TagSet", "TagSetSelector", "FilteredTagSet", "FilteredTagSetSelector"]
                 self.type_selector = TagSet(members, sep="\n", id="type-choice", key=lambda x: x, item_fmt="[bold]![/]", modal=False)
                 with VerticalScroll(id="display", classes="top-level"):
-                    yield Static("Select object type here")
+                    yield Static("Click on required object type")
                     yield self.type_selector
                     yield Button("Quit")
             with VerticalScroll(id="message"):
@@ -99,7 +100,8 @@ class SelTestApp(App):
         self.set_message(f"{event.selected} selected")
 
     @on(TagSetSelector.Moved, "#demo-widget")
-    def moved(self, e: TagSetSelector.Moved):
+    def moved(self, e: TagSetSelector
+              .Moved):
         self.set_message(f"{e.value} {e.operation}")
 
     def esc_processed(self, s):
