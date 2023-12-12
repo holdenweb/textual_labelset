@@ -57,15 +57,15 @@ class SelTestApp(App):
         self.separator = Input("\\n", placeholder="Enter separator")
         horiz = Horizontal(id="container")
         with Vertical():
+            yield Static(
+            "The link text becomes the selection hyperlink for an entry. "
+            "The item format must contain a \"!\" to indicate where the "
+            "link should appear. The separator is inserted between items. "
+            "The usual Python escape sequences are available.\n"
+            "For selectors, the entries are initially split evenly "
+            "between the two TagSets.")
             with horiz:
                 with VerticalScroll(classes="top-level"):
-                    yield Static(
-                    "The link text becomes the selection hyperlink for an entry. "
-                    "The item format must contain a \"!\" to indicate where the "
-                    "link should appear. The separator is inserted between items. "
-                    "The usual Python escape sequences are available.\n"
-                    "For selectors, the entries are initially split evenly "
-                    "between the two TagSets.")
                     with Grid(id="questions"):
                         yield Static("\nHow many names:")
                         yield self.name_count
