@@ -100,8 +100,7 @@ class SelTestApp(App):
         self.set_message(f"{event.selected} selected")
 
     @on(TagSetSelector.Moved, "#demo-widget")
-    def moved(self, e: TagSetSelector
-              .Moved):
+    def moved(self, e: TagSetSelector.Moved):
         self.set_message(f"{e.value} {e.operation}")
 
     def esc_processed(self, s):
