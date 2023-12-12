@@ -45,51 +45,61 @@ This will create `dist/textual_tagset-X.Y.Z.tar.gz` and
 `dist/textual_tagset-X.Y.Z-py3-none-any.whl`, either of
 which can be installed with pip.
 
+### Demonstration
+
+A simple demonstration of the modal version of each of the
+classes is available by using
+
+    make demo
+
+#### NOTES:
+
+  **To submit the result of the FilteredTagSet and the
+  FilteredTagSetSelector you need to press Enter!**
+
+  **The make command requires poetry. If you haven't installed it,
+  try**
+
+    textual run textual_tagset.demo
+
 ### Usage
 
 A `TagSet` is a set of string tags.
-You won't normally use them directly,
-but you can create one by calling the `TagSet`
-constructor with a dict of string values, each
-of which has a unique integer key.
-A more convenient API would clearly be helpful,
-and will likely emerge shortly.
+Clicking on a particular tag causes a `TagSet.Selected`
+Message to be raised. This has an```index` attribute that
+contains the numerical index of the selected element, and
+a `selected` attribute containing the selected tag.
 
 A `FilteredTagset` has the same interface as a
-`TagSet` but provideses an `Input` to enter a filter
-string value to limit the choices available in
-the `TagSet` for ease of selection.
+`TagSet` but provides an `Input` to enter a filter
+string value to limit the choices visible in
+the `TagSet` for ease of selection. Pressing the
+Enter key the component raises a `TagSetSelector.Selected`
+signal whose `values` attribute holds the tags from the
+selected set.
 
-You create a `TagSetSelector` by providing two
-dicts, one containing the selected labels and
-the other containing the deselected labels.
-Note that the keys must be nnumeric, and unique across
-both dicts.
+The `TagSetSelector` lets you maintain two TagSets, one showing the
+the selected tags and the other showing other tags available for
+selection. Clicking on a tag moves it from it's present location
+to the other set.
 
 As you might expect there's also a `FilteredTagSetSelector`,
 which uses `FilteredTagSet`s for the values.
 The assumption here was that many more items would
 remain unselected than _be_ selected,
 
-The default representation  of a `FilteredtTagSetSelector` shows each tagset
-as a variable-height area of selected values
-next to a similar area of deselected values.
 
-More documentation will follow on demand.
-No demand, no more documentation :).
+### Python API
 
-### Demonstrations and Code Samples
+TagSet and FilteredTagSet have the same API, as do TagSetSelector and
+FilteredTageSetSelector.
 
-A simple demonstration of each of the classes is available
-by using `make demo`. NOTE: **to submit the result of the
-FilteredTagSet and the FilteredTagSetSelector you need to
-press Enter!**
+#### TagSet, FilteredTagSet
+#### TagSetSelector, FilteredTagSetSelector
+
+Documentation to be provided once API is stabilised.
+
+### Further development
 
 Development work will aim to increase usability:
-
-1. Make sorting somewhat easier to configure (at present
-   it uses a slightly bizarre algorithm to sort names correctly).
-2. Make it easier to configure the formats used for the selected
-   and deselected items.
-3. Simplify the API.
-
+User comments and issues are both warmly welcome.
