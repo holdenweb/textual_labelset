@@ -33,30 +33,28 @@ class ClickableStatic(Static):
 
 class TagSet(Widget):
 
-    """A set of labels that render as a static.
+    """Allow selection of a single label from a given set.
 
-    Args:
-        members: Either a sequence of tags, or a dictionary of tags,
+    Parameters
+    ----------
+    members: Sequence | dict
+        Either a sequence of tags, or a dictionary of tags,
         keyed by unique integers.
 
-        action_func: The action to be taken when a member's link is clicked.
-        fmt: The format of a member in the TagSet's string representation.
-        key: The key function used to sort the members.
+    item_fmt: str | None:
+        A string format determining how each link should appear.
+        The links will replace an excalamation mark in this format.
+        Defaults to "[!]", so links will appear in square brackets.
+    link_fmt: str | None:
+        A string format determining what goes inside each link.
+        Use {i} to include the key of a tag, {v} to include
+        the tag value itself. Defaults to {v}, the tag value.
+    sep: str | None:
+        A string used to separate the tags. Defaults to "\n".
+    modal: bool:
+        Detarmines whether the component or its modal version
+        is being displayed.
     """
-    class Selected(Message):
-        def __init__(self, w: Widget, i: int, s: str):
-            super().__init__()
-            self._control = w
-            self.index = i
-            self.selected = s
-        @property
-        def control(self):
-            return self._control
-
-    def local_key(self, x: tuple[int, str]):
-        seq = reversed(x[1].split())
-        return list(seq)
-
     def __init__(
         self,
         members: dict[int, str], /,
@@ -81,6 +79,20 @@ class TagSet(Widget):
         self.filter_string = ""
         self.can_focus = True
         self.key_value = None
+
+    class Selected(Message):
+        def __init__(self, w: Widget, i: int, s: str):
+            super().__init__()
+            self._control = w
+            self.index = i
+            self.selected = s
+        @property
+        def control(self):
+            return self._control
+
+    def local_key(self, x: tuple[int, str]):
+        seq = reversed(x[1].split())
+        return list(seq)
 
     def push(self, key, value):
         assert key not in self.members
@@ -125,7 +137,7 @@ class TagSet(Widget):
     @on(ClickableStatic.Clicked)
     def tagset_selected(self, event: Selected):
         """
-        When to TagSet is modal, the selected element is returned
+        When the TagSet is modal, the selected element is returned
         as the result of the modal screen. Otherwise the Selected
         message bubbles to the DOM parent of the TagSet.
         """
@@ -136,7 +148,7 @@ class TagSet(Widget):
             self.post_message(self.Selected(self, i := event.i, self.members[i]))
 
 class FilteredTagSet(TagSet):
-
+    """Allow selection of a tag from a set"""
     def compose(self):
         with Vertical():
             yield Input(id="filter-string")
