@@ -26,13 +26,13 @@ class ModalTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
-        return TagSetSelector(self.items[:s], self.items[s:], id="demo-widget")
+        return TagSetSelector(self.items[:s], self.items[s:], link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
 
 class ModalFilteredTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
-        return FilteredTagSetSelector(self.items[:s], self.items[s:], id="demo-widget")
+        return FilteredTagSetSelector(self.items[:s], self.items[s:], link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
 
 selector = {
     "TagSet": ModalTagSet,

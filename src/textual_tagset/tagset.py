@@ -188,6 +188,19 @@ class SelectorBase(Widget):
             return self._control
 
 
+    def __init__(self, s_tags: list[str], u_tags: list[str], link_fmt="{v}", item_fmt="[!]", sep=" ", modal: bool = False,
+                 *args, **kw) -> None:
+        super().__init__(*args, **kw)
+        self.sep = sep
+        self.s_dict: dict[int, str] = dict(enumerate(s_tags))
+        self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
+        self.link_fmt = link_fmt
+        self.item_fmt = item_fmt
+        self.s_tags = self.tagset_type(self.s_dict, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, modal=False, id="selected-set")
+        self.u_tags = self.tagset_type(self.u_dict, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, modal=False, id="unselected-set")
+        self.modal = modal
+        self.can_focus = True
+
     class Selected(Message):
         def __init__(self, w, values):
             super().__init__()
@@ -196,17 +209,6 @@ class SelectorBase(Widget):
         @property
         def control(self):
             return self._control
-
-    def __init__(self, s_tags: list[str], u_tags: list[str], sep=" ", modal: bool = False,
-                 *args, **kw) -> None:
-        super().__init__(*args, **kw)
-        self.sep = sep
-        self.s_dict: dict[int, str] = dict(enumerate(s_tags))
-        self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.s_tags = self.tagset_type(self.s_dict, id="selected-set", sep=self.sep, modal=False)
-        self.u_tags = self.tagset_type(self.u_dict, id="unselected-set", sep=self.sep, modal=False)
-        self.modal = modal
-        self.can_focus = True
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="lss-selector"):
