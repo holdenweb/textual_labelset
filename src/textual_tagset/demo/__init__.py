@@ -55,7 +55,6 @@ class SelTestApp(App):
         self.link_text = Input(value="{v}", placeholder="Enter link text format")
         self.item_format = Input(value="[!]", placeholder="Enter entry text format (! becomes link")
         self.separator = Input("\\n", placeholder="Enter separator")
-        horiz = Horizontal(id="container")
         with Vertical():
             yield Static(
             "The link text becomes the selection hyperlink for an entry. "
@@ -64,7 +63,7 @@ class SelTestApp(App):
             "The usual Python escape sequences are available.\n"
             "For selectors, the entries are initially split evenly "
             "between the two TagSets.")
-            with horiz:
+            with Horizontal(id="container"):
                 with VerticalScroll(classes="top-level"):
                     with Grid(id="questions"):
                         yield Static("\nHow many names:")

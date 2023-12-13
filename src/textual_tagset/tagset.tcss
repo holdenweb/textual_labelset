@@ -26,7 +26,9 @@ Button {
 Input {
     min-height: 3;
 }
-#message-box { text-align: center; }
+#message-box {
+    text-align: center;
+}
 
 #message {
     dock: bottom;
@@ -37,8 +39,11 @@ Input {
 #questions {
     layout: grid;
     grid-size: 2;
+    height: auto;
+}
+#container {
+    height: 1fr;
 }
 .top-level {
     border: white 75%;
-    height: 1fr;
  }
