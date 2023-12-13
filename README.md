@@ -31,7 +31,7 @@ To create a virtual environment with `textual_tagset` already installed,
 first select your Python version.
 Textual_tagset supports Python 3.8 onwards.
 
-    poetry env create 3.11
+    poetry env use 3.11
 
 Then enter
 
