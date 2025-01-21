@@ -2,10 +2,20 @@
 
 A utility to allow selection of choices, either singly or in groups.
 
+To get a flavour of what the package can do, after installation run
+
+    python -m textual_tagset.demo
+
+This lets you play with the four object types the tagset package offers
+choosing the number of items you want to work with.
+See the **Demonstration** section below.
+
+![The tagset demo utility](images/CC-SA-88x31.png)
 ### Dependency
 
 Besides the usual Python ecosystem the sole requirement
 is the [textual package](https://textualize.io/) itself.
+
 For development you will need [the `poetry` command](https://python-poetry.org/docs/).
 Installation is normally straightforward.
 

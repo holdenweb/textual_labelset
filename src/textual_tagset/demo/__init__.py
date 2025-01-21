@@ -15,24 +15,24 @@ from .basescreen import BaseScreen
 class ModalTagSet(BaseScreen):
 
     def demo_widget(self):
-        return TagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
+        return TagSet(self.items, link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, id="demo-widget")
 
 class ModalFilteredTagSet(BaseScreen):
 
     def demo_widget(self):
-        return FilteredTagSet(self.items, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
+        return FilteredTagSet(self.items, link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, id="demo-widget")
 
 class ModalTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
-        return TagSetSelector(self.items[:s], self.items[s:], link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
+        return TagSetSelector(self.items[:s], self.items[s:], link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, id="demo-widget")
 
 class ModalFilteredTagSetSelector(BaseScreen):
 
     def demo_widget(self):
         s = len(self.items) // 2
-        return FilteredTagSetSelector(self.items[:s], self.items[s:], link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, id="demo-widget")
+        return FilteredTagSetSelector(self.items[:s], self.items[s:], link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, id="demo-widget")
 
 selector = {
     "TagSet": ModalTagSet,
@@ -87,9 +87,9 @@ class SelTestApp(App):
     @on(TagSet.Selected, "#type-choice")
     async def tagset_type_selected(self, event):
         n = int(self.name_count.value)
-        link_fmt = self.esc_processed(self.link_text.value)
-        item_fmt = self.esc_processed(self.item_format.value)
-        sep = self.esc_processed(self.separator.value)
+        link_fmt = self.decoded(self.link_text.value)
+        item_fmt = self.decoded(self.item_format.value)
+        sep = self.decoded(self.separator.value)
         screen_type = selector[event.selected]
         await self.app.push_screen(screen_type(n, link_fmt=link_fmt, item_fmt=item_fmt, sep=sep), self.finished_screen)
         self.app.query_one("#widget-container").focus()
@@ -102,7 +102,8 @@ class SelTestApp(App):
     def moved(self, e: TagSetSelector.Moved):
         self.set_message(f"{e.value} {e.operation}")
 
-    def esc_processed(self, s):
+
+    def decoded(self, s):
         return codecs.escape_decode(bytes(s, "utf-8"))[0].decode("utf-8")
 
     def finished_screen(self, message):
@@ -132,7 +133,10 @@ class SelTestApp(App):
     def button_pressed(self):
         self.exit()
 
+def main():
+    return app.run()
+
 app = SelTestApp()
 
 if __name__ == '__main__':
-    app.run()
+    main()

@@ -6,14 +6,14 @@ from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.events import Event, InputEvent, Message, Key
 from textual.widget import Widget
-from textual.widgets import Static, Rule, Input
+from textual.widgets import Static, Rule, Input, ListView
 
 from typing import Optional, Callable
 
 class ClickableStatic(Static):
 
     class Clicked(Message):
-        def __init__(self, w, i):
+        def __init__(self, w: Widget, i: int):
             super().__init__()
             self._control = w
             self.i = i
@@ -41,15 +41,15 @@ class TagSet(Widget):
         Either a sequence of tags, or a dictionary of tags,
         keyed by unique integers.
 
-    item_fmt: str | None:
+    item_fmt: Optional[str]:
         A string format determining how each link should appear.
         The links will replace an excalamation mark in this format.
         Defaults to "[!]", so links will appear in square brackets.
-    link_fmt: str | None:
+    link_fmt: Optional[str]:
         A string format determining what goes inside each link.
         Use {i} to include the key of a tag, {v} to include
         the tag value itself. Defaults to {v}, the tag value.
-    sep: str | None:
+    sep: Optional[str]:
         A string used to separate the tags. Defaults to "\n".
     modal: bool:
         Detarmines whether the component or its modal version
@@ -58,27 +58,27 @@ class TagSet(Widget):
     def __init__(
         self,
         members: dict[int, str], /,
-        item_fmt: str | None = None,
-        link_fmt: str | None = None,
-        key: Optional[Callable[[int], None]] | None = None,
+        item_fmt: Optional[str] = None,
+        link_fmt: Optional[str] = None,
+        key: Optional[Callable[[tuple[int, str]], list[str]]] = None,
         sep: str = " ",
         modal: bool = True,
         *args,
         **kw,
     ):
         super().__init__(*args, **kw)
-        self.item_fmt = "[!]" if item_fmt is None else item_fmt
-        self.link_fmt = "{v}" if link_fmt is None else link_fmt
-        self.key = self.local_key if key is None else key
-        self.sep = sep
-        self.modal = modal
+        self._item_fmt = "[!]" if item_fmt is None else item_fmt
+        self._link_fmt = "{v}" if link_fmt is None else link_fmt
+        self._key = self._local_key if key is None else key
+        self._sep = sep
+        self._modal = modal
         if not isinstance(members, Mapping):
             members = dict(enumerate(members))
-        self.members = dict(sorted(members.items(), key=self.key))
+        self.members = dict(sorted(members.items(), key=self._key))
         self.static = ClickableStatic(Text(""), id="tagset-static")
-        self.filter_string = ""
+        self._filter_string = ""
         self.can_focus = True
-        self.key_value = None
+        self._key_value: str = ""
 
     class Selected(Message):
         def __init__(self, w: Widget, i: int, s: str):
@@ -90,17 +90,15 @@ class TagSet(Widget):
         def control(self):
             return self._control
 
-    def local_key(self, x: tuple[int, str]):
+    def _local_key(self, x: tuple[int, str]) -> list[str]:
         seq = reversed(x[1].split())
         return list(seq)
 
-    def push(self, key, value):
-        assert key not in self.members
+    def _push(self, key, value):
         self.members[key] = value
         self.update()
 
-    def pop(self, key):
-        assert key in self.members
+    def _pop(self, key):
         v = self.members.pop(key)
         self.update()
         return v
@@ -116,23 +114,23 @@ class TagSet(Widget):
         if members is not None:
             self.members = members
         strings = []
-        for (i, v) in sorted(self.members.items(), key=self.key):
-            if self.filter_string in v.lower():
-                link = f"[@click='click({i})']{self.link_fmt}[/]".format(i=i, v=v)
-                item = self.item_fmt.format(i=i, v=v)
+        for (i, v) in sorted(self.members.items(), key=self._key):
+            if self._filter_string in v.lower():
+                link = f"[@click='click({i})']{self._link_fmt}[/]".format(i=i, v=v)
+                item = self._item_fmt.format(i=i, v=v)
                 strings.append(item.replace("!", link))
-        content = Text.from_markup(self.sep.join(strings))
+        content = Text.from_markup(self._sep.join(strings))
         self.static.update(content)
 
     def action_click(self, i: int):
-        self.key_value = self.members[i]
-        self.post_message(self.Selected(self, self.key_value))
+        self._key_value = self.members[i]
+        self.post_message(self.Selected(self, i, self._key_value))
 
     def render(self):
         return self.static.render()
 
     def result(self):
-        return self.key_value
+        return self._key_value
 
     @on(ClickableStatic.Clicked)
     def tagset_selected(self, event: Selected):
@@ -142,10 +140,10 @@ class TagSet(Widget):
         message bubbles to the DOM parent of the TagSet.
         """
         self.app.log(self.tree)
-        if self.modal:
+        if self._modal:
             self.screen.dismiss(self.members[event.i])
         else:
-            self.post_message(self.Selected(self, i := event.i, self.members[i]))
+            self.post_message(self.Selected(self, (i := event.i), self.members[i]))
 
 class FilteredTagSet(TagSet):
     """Allow selection of a tag from a set"""
@@ -156,7 +154,7 @@ class FilteredTagSet(TagSet):
 
     @on(Input.Changed)
     def input_changed(self, event: Input.Changed):
-        self.filter_string = event.control.value.lower()
+        self._filter_string = event.control.value.lower()
         self.update()
 
     @on(Input.Submitted)
@@ -172,12 +170,13 @@ class SelectorBase(Widget):
         unselected: An iterable of the currently deselected labels.
     """
     CSS_PATH = "tagset.tcss"
+    tagset_type: type[TagSet] | type[FilteredTagSet]
 
     class Meta:
         abstract = True
 
     class Moved(Message):
-        def __init__(self, w, i, v, op):
+        def __init__(self, w: Widget, i: int, v: str, op: str):
             super().__init__()
             self._control = w
             self.index = i
@@ -188,17 +187,17 @@ class SelectorBase(Widget):
             return self._control
 
 
-    def __init__(self, s_tags: list[str], u_tags: list[str], link_fmt="{v}", item_fmt="[!]", sep=" ", modal: bool = False,
+    def __init__(self, s_choices: list[str], u_choices: list[str], link_fmt="{v}", item_fmt="[!]", sep=" ", modal: bool = False,
                  *args, **kw) -> None:
         super().__init__(*args, **kw)
-        self.sep = sep
-        self.s_dict: dict[int, str] = dict(enumerate(s_tags))
-        self.u_dict: dict[int, str] = dict(enumerate(u_tags, start=len(s_tags)))
-        self.link_fmt = link_fmt
-        self.item_fmt = item_fmt
-        self.s_tags = self.tagset_type(self.s_dict, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, modal=False, id="selected-set")
-        self.u_tags = self.tagset_type(self.u_dict, link_fmt=self.link_fmt, item_fmt=self.item_fmt, sep=self.sep, modal=False, id="unselected-set")
-        self.modal = modal
+        self._sep = sep
+        self.s_dict: dict[int, str] = dict(enumerate(s_choices))
+        self.u_dict: dict[int, str] = dict(enumerate(u_choices, start=len(s_choices)))
+        self._link_fmt = link_fmt
+        self._item_fmt = item_fmt
+        self.s_tags = self.tagset_type(self.s_dict, link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, modal=False, id="selected-set")
+        self.u_tags = self.tagset_type(self.u_dict, link_fmt=self._link_fmt, item_fmt=self._item_fmt, sep=self._sep, modal=False, id="unselected-set")
+        self._modal = modal
         self.can_focus = True
 
     class Selected(Message):
@@ -244,7 +243,7 @@ class SelectorBase(Widget):
 
     @on(Input.Submitted)
     def input_submitted(self, e: Input.Submitted):
-        if self.modal:
+        if self._modal:
             self.screen.dismiss(self.s_dict.values())
         else:
             self.post_message(self.Selected(self, self.s_dict.values()))
@@ -264,35 +263,3 @@ class FilteredTagSetSelector(TagSetSelector):
     """
     tagset_type = FilteredTagSet
 
-s = "Tom Dick Harry".split()
-u = "Charlie Joe Quentin".split()
-
-fmt = "{v}"
-
-
-def ignore(i):
-    pass
-
-
-class TestApp(App):
-
-    CSS_PATH = "tagset.tcss"
-
-    def __init__(self):
-        super().__init__()
-        members = dict(enumerate(s))
-        self.component = TagSet(members)
-        TagSet(members)
-
-    def compose(self):
-        with Horizontal():
-            yield self.component
-
-    def on_click(self, event):
-        self.log(self.tree)
-        self.log(self.css_tree)
-
-app = TestApp()
-
-if __name__ == '__main__':
-    app.run()

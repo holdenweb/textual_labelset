@@ -1,6 +1,7 @@
 import sys
-from textual.widget import Widget
+from typing import Optional
 
+from textual.widget import Widget
 from textual.app import Screen
 from textual.screen import ModalScreen
 from textual.containers import Horizontal, Vertical, VerticalScroll
@@ -9,6 +10,7 @@ from textual.events import Key
 from textual.widgets import Button, Static
 from textual_tagset.demo.data import random_names
 
+
 class BaseScreen(ModalScreen):
 
     CSS_PATH = "basescreen.tcss"
@@ -16,18 +18,18 @@ class BaseScreen(ModalScreen):
     def __init__(
         self,
         n,
-        item_fmt: str | None = "\\[!]",
-        link_fmt: str | None = "{v}",
-        sep: str | None = "\n",
+        item_fmt: Optional[str] = "\\[!]",
+        link_fmt: Optional[str] = "{v}",
+        sep: Optional[str] = "\n",
     ):
         self.n = n
-        self.item_fmt = item_fmt
-        self.link_fmt = link_fmt
-        self.sep = sep
+        self._item_fmt = item_fmt
+        self._link_fmt = link_fmt
+        self._sep = sep
         self.items = list(random_names(self.n))
         super().__init__("MyBaseScreen")
         self.main_widget = self.demo_widget()
-        self.modal = True
+        self._modal = True
 
     def compose(self):
         with Vertical(id="tagset-dialog"):
@@ -43,3 +45,6 @@ class BaseScreen(ModalScreen):
     def on_key(self, k: Key):
         if k.key == 'enter':
             self.dismiss(result=self.main_widget.result())
+
+    def demo_widget(self):
+        raise NotImplementedError("BaseScreen subclasses must declare a 'demo_widget' method.")
