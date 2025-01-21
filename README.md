@@ -4,7 +4,7 @@ A utility to allow selection of choices, either singly or in groups.
 
 To get a flavour of what the package can do, after installation run
 
-    python -m textual-tagset.demo
+    python -m textual_tagset.demo
 
 This lets you play with the four object types the tagset package offers
 choosing the number of items you want to work with.

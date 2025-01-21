@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "textual-tagset"
-version = "0.3.2"
+version = "0.3.3"
 description = "Maintain tag sets easily and visually"
 authors = ["Steve Holden <steve@holdenweb.com>"]
 license = "MIT"
