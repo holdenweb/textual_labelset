@@ -21,25 +21,29 @@ Installation is normally straightforward.
 
 ### Installation
 
-`textual_tagset` isn't currently available on PyPI, but will be.
-At present I'm interested in gathering comments.
-For the moment, please follow these instructions.
+`textual_tagset` is available on PyPI, which will be
+by far the simplest installation. Simply create a virtual environment (while not strictly necessary
+this is stringly advised) and with the environment activated issue the command
 
-    git clone git@github.com:holdenweb/textual_tagset.git
+    pip install textual-tagset
+
+I'm very interested in gathering comments. For development feel free to download a copy
+
+    git clone git@github.com:holdenweb/textual-tagset.git
 
 if you prefer to use HTTPS:
 
-    git clone https://github.com/holdenweb/textual_tagset.git
+    git clone https://github.com/holdenweb/textual-tagset.git
 
 In either case, change into the directory you just created.
 
     cd textual_tagset
 
-We recommend you perform Python development work
+We really do recommend you perform Python development work
 inside a virtual environment.
 To create a virtual environment with `textual_tagset` already installed,
 first select your Python version.
-Textual_tagset supports Python 3.8 onwards.
+Textual_tagset supports Python 3.9 onwards.
 
     poetry env use 3.11
 
@@ -79,6 +83,8 @@ As you might expect there's also a `FilteredTagSetSelector`,
 which uses `FilteredTagSet`s for the values.
 The filtered variants are especially useful when tags must
 be selected from an intractably large set.
+In the filtered versions, interaction is terminated by
+pressing return.
 
 
 ### Python API
