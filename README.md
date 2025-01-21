@@ -4,13 +4,13 @@ A utility to allow selection of choices, either singly or in groups.
 
 To get a flavour of what the package can do, after installation run
 
-    python -m textual_tagset.demo
+    python -m textual-tagset.demo
 
 This lets you play with the four object types the tagset package offers
 choosing the number of items you want to work with.
 See the **Demonstration** section below.
 
-![The tagset demo utility](images/CC-SA-88x31.png)
+![The tagset demo utility](CC-SA-88x31.png)
 ### Dependency
 
 Besides the usual Python ecosystem the sole requirement
@@ -55,23 +55,6 @@ This will create `dist/textual_tagset-X.Y.Z.tar.gz` and
 `dist/textual_tagset-X.Y.Z-py3-none-any.whl`, either of
 which can be installed with pip.
 
-### Demonstration
-
-A simple demonstration of the modal version of each of the
-classes is available by using
-
-    make demo
-
-#### NOTES:
-
-  **To submit the result of the FilteredTagSet and the
-  FilteredTagSetSelector you need to press Enter!**
-
-  **The make command requires poetry. If you haven't installed it,
-  try**
-
-    textual run textual_tagset.demo
-
 ### Usage
 
 A `TagSet` is a set of string tags.
@@ -90,13 +73,12 @@ selected set.
 
 The `TagSetSelector` lets you maintain two TagSets, one showing the
 the selected tags and the other showing other tags available for
-selection. Clicking on a tag moves it from it's present location
-to the other set.
+selection. Clicking on a tag moves it from one set to the other.
 
 As you might expect there's also a `FilteredTagSetSelector`,
 which uses `FilteredTagSet`s for the values.
-The assumption here was that many more items would
-remain unselected than _be_ selected,
+The filtered variants are especially useful when tags must
+be selected from an intractably large set.
 
 
 ### Python API
